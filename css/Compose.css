@@ -1,0 +1,35 @@
+/*
+*Author: Waqqas Sheikh;
+*Date: 23-Feb-2013;
+*/
+
+textarea{
+	background:white;
+	width: 95%;
+	line-height: 1.5em;
+	height:100%;
+	overflow:auto;
+	padding: 1em 1.5em;
+	border-top: 1px solid #2d2d30;
+	border-left: 1px solid #2d2d30;
+	border-right: 1px solid #2d2d30;
+	font-size: 12px;
+}
+
+#searchfield{
+	float:right;
+	border: 1px solid #b0b0b0;
+	padding: 0.5em;
+	font-size: 12px;
+}
+
+.composefield{
+	border: 1px solid #b0b0b0;
+	padding: 0.25em;
+	margin: 0.1em;
+	font-size: 12px;
+}
+
+
+
+

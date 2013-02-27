@@ -1,0 +1,19 @@
+/*
+*Autor: Waqqas Sheikh;
+*Date: 10-Feb-2013;
+*/
+
+
+#messagePanel{
+	background:white;
+	line-height: 1.5em;
+	height:100%;
+	overflow:auto;
+	padding: 1em 1.5em;
+	border-top: 1px solid #2d2d30;
+	border-left: 1px solid #2d2d30;
+	border-right: 1px solid #2d2d30;
+}
+
+
+

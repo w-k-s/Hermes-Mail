@@ -1,0 +1,130 @@
+/*
+*Author: Waqqas Sheikh;
+*Date: 22-Feb-2013;
+*/
+body{
+	width:auto;
+	height:100%;
+	text-align:center;
+	background-image:url('http://learn.zu.ac.ae/themes/as_2012/images/bblearn_2011_bg.png');
+	background-color: #f0f0f0;
+	font-size: 15px;
+}
+
+#wrapper{
+	//background: black;
+	width: 75%;
+	height: 500px;
+	margin: 0 auto;
+	padding: 0.5em;
+}
+
+#header{
+	width: 100%;
+	height: 5%;
+	//background:red;
+}
+
+#content{
+	width: 100%;
+	height: 90%;
+	//background:yellow;
+}
+
+
+#loginPanel{
+	width: 40%;
+	height: 100%;
+	margin: 0 auto;
+	text-align:left;
+	//background:orange;
+	color: #606060;
+}
+
+#logoPanel{
+	text-align:center;
+}
+
+
+#logoPanel h1{
+	font-size: 70px;
+	font-weight: bold;
+	padding:0.5em;
+}
+
+#logo{
+	text-align:center;
+	width:30%;
+	height:auto;
+}
+
+#footer{
+	width: 100%;
+	height: 5%;
+	//background: green;
+	font-size:10px;
+}
+
+.field{
+	border: 1px solid #b0b0b0;
+	width: 96%;
+	padding: 0.3em;
+	font-size: 16px;
+	border: 2px solid #b0b0b0;
+	border-radius:2px;
+}
+
+.button{
+	background: #499bea; /* Old browsers */
+	background: -moz-linear-gradient(top, #499bea 0%, #207ce5 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#499bea), color-stop(100%,#207ce5)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #499bea 0%,#207ce5 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, #499bea 0%,#207ce5 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, #499bea 0%,#207ce5 100%); /* IE10+ */
+	background: linear-gradient(to bottom, #499bea 0%,#207ce5 100%); /* W3C */
+	border-radius: 2px;
+	padding: 0.5em;
+	margin: 0.5em;
+	border:none;
+	font-size: 15px;
+	color: white;
+	float:right;
+
+}
+
+.button:hover{
+	background: #7abcff;
+	background: -moz-radial-gradient(center, ellipse cover, #7abcff 0%, #60abf8 44%, #4096ee 100%); /* FF3.6+ */
+	background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,#7abcff), color-stop(44%,#60abf8), color-stop(100%,#4096ee)); /* Chrome,Safari4+ */
+	background: -webkit-radial-gradient(center, ellipse cover, #7abcff 0%,#60abf8 44%,#4096ee 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-radial-gradient(center, ellipse cover, #7abcff 0%,#60abf8 44%,#4096ee 100%); /* Opera 12+ */
+	background: -ms-radial-gradient(center, ellipse cover, #7abcff 0%,#60abf8 44%,#4096ee 100%); /* IE10+ */
+}
+
+.button:active{
+	background: #4096ee; /* Old browsers */
+	background: -moz-linear-gradient(top, #4096ee 0%, #4096ee 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#4096ee), color-stop(100%,#4096ee)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #4096ee 0%,#4096ee 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, #4096ee 0%,#4096ee 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, #4096ee 0%,#4096ee 100%); /* IE10+ */
+	background: linear-gradient(to bottom, #4096ee 0%,#4096ee 100%); /* W3C */
+}
+
+#overview{
+	border: 1px solid black;
+	border-radius:3em;
+	background: #2d2d30;
+	padding: 0.3em 1em;
+	font: normal 15px tahoma;
+	opacity: 0.75;
+	display: inline;
+
+}
+
+#overview a:link{
+	color: white;
+	text-decoration: none;
+}
+
+

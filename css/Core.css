@@ -1,0 +1,17 @@
+/*
+*Autor: Waqqas Sheikh;
+*Date: 10-Feb-2013;
+*Description: Common css features of all pages.;
+*/
+
+@font-face{
+	font-family: ubuntu;
+	src: url('../res/ubuntu.ttf');
+}
+
+*{
+	margin:0px;
+	padding:0px;
+	font-family: ubuntu;
+}
+
