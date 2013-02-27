@@ -11,7 +11,7 @@
 }
 
 #table_inbox tr {
-	border: 1 gray solid;
+	border: 1px gray solid; /*remove perhaps*/
 	height:40px;
 	cursor:pointer;
 }
