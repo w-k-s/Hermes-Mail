@@ -61,3 +61,7 @@ body{
 	color: yellow;
 	text-decoration: none;
 }
+
+#creditsPanel a:visited{
+	color: #4196e1;
+}
