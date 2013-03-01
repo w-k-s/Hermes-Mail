@@ -18,7 +18,7 @@ function doValidation()
 	allEmails = [];
 	invalidEmails = [];
 
-	if(!toFieldContainsEmail())
+	if(toFieldIsEmpty())
 	{
 		alert('You must provide a receipant email address');
 		return false;
@@ -43,9 +43,9 @@ function doValidation()
 
 }
 
-function toFieldContainsEmail()
+function toFieldIsEmpty()
 {
-	return (toField.value.trim() != "");
+	return (toField.value.trim() == "");
 }
 
 function allEmailsValid()
