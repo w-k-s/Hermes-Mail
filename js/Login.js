@@ -3,20 +3,20 @@ var passwordField = document.getElementById('txt_password');
 
 function doValidation()
 {
-	okay = false;
-	email = emailField.trim().value;
-	password = passwordField.trim().value;
+	email = emailField.value.trim();
+	password = passwordField.value.trim();
 
 	if(email== "" || password == "")
 	{
 		alert('You must provide your username and your password');
+		return false;
 	}
 
 	if(!emailIsValid(email))
 	{
 		alert('The email is invalid.');
+		return false;
 	}
 
-	okay = true 
-	return okay;
+	return true;
 }

@@ -30,14 +30,11 @@ body{
 	text-align: left;
 	line-height:2em;
 	padding-left: 1em;
-	border-top: 1px solid black;
-	border-bottom: 1px solid black;
 }
 
 #content{
 	width:auto;
 	height:90%;
-	background:black;/*User should not see this*/
 	font-size:12px;
 	overflow:hidden;
 	border-bottom: 1px solid #A2B5CD;
@@ -48,7 +45,6 @@ body{
 	background:#BCD2EE;/*#BCD2EE-#A2B5CD*/
 	height:3%;
 	width:auto;
-	padding-top:2ex;
 	border-top:1px solid #A2B5CD;
 	border-bottom:1px solid #A2B5CD;
 	padding:1em 3em;

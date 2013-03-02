@@ -5,25 +5,13 @@
 
 #infoPanel{
 	background:#F0F8FF;
-	height:10%;
+	height:13%;
 	width:auto;
 	border-bottom:1px solid #E0E0E0;
-	line-height: 1.5em;
+	line-height: 2em;
 	padding:1em 3em;
-	overflow: scroll;
+	overflow: auto;
 }
-
-#messagePanel{
-	background:white;
-	line-height: 1.5em;
-	height:85%;
-	overflow:auto;
-	padding: 1em 1.5em;
-	border-top: 1px solid #2d2d30;
-	border-left: 1px solid #2d2d30;
-	border-right: 1px solid #2d2d30;
-}
-
 
 #emailPanel{
 	/*this must be on first line*/
@@ -32,6 +20,16 @@
 	width:auto;
 	padding: 3em 3em;
 	
+}
+
+#messagePanel{
+	background:white;
+	height:84%;
+	overflow:auto;
+	padding: 1em 1.5em;
+	border-top: 1px solid #2d2d30;
+	border-left: 1px solid #2d2d30;
+	border-right: 1px solid #2d2d30;
 }
 
 textarea{
@@ -49,8 +47,8 @@ textarea{
 
 .composefield{
 	border: 1px solid #b0b0b0;
-	padding: 0.2em;
-	margin: 0.1em;
+	padding: 0.25em;
+	margin: 0.20em;
 	font-size: 12px;
 }
 
