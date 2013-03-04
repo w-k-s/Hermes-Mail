@@ -6,8 +6,8 @@ body{
 #header{
 	width:100%;
 	height:5%;
-	color:#000000;
-	background-image:url('http://learn.zu.ac.ae/themes/as_2012/images/bblearn_2011_bg.png');
+	color:white;
+	background: #3D59AB;/* #36648B #104E8B;*/
 }
 
 #title{
@@ -22,10 +22,23 @@ body{
 	padding-right:2em;
 }
 
+#userPanel a{
+	color: yellow;
+	text-decoration: none;
+}
+
+#userPanel a:active, a:hover{
+	font-weight: bold;
+}
+
+#userPanel a:visited{
+	color: #87CEFF;
+}
+
 #navigation{
-	background: #104E8B;/*#5CACEE*/
+	background: #2d2d30;/* #36648B #104E8B;*/
 	width:11%;
-	height:90%;
+	height:95%;
 	float:left;
 	text-align: left;
 	line-height:2em;
@@ -34,11 +47,11 @@ body{
 
 #content{
 	width:auto;
-	height:90%;
+	height:95%;
 	font-size:12px;
-	overflow:hidden;
-	border-bottom: 1px solid #A2B5CD;
-	background:url('../res/stripe5.png');
+	overflow:scroll;
+	overflow-x: hidden;
+	background:url('../res/stripe.png');
 }
 
 #buttonPanel{
@@ -47,15 +60,16 @@ body{
 	width:auto;
 	border-top:1px solid #A2B5CD;
 	border-bottom:1px solid #A2B5CD;
-	padding:1em 3em;
+	padding:0.5em 2em;
 }
 
 #footer{
+	background: white;
 	width:auto;
-	height:5%;
+	height:3%;
 	text-align:center;
-	padding: 1em;
-	
+	padding: 0.5em;
+	box-shadow: inset 0px 3px 6px #909090;
 }
 
 #nav li{
@@ -76,6 +90,7 @@ li a:hover,li a:active{
 	border: 1px solid #A2B5CD;
 	padding: 0.5em;
 	font-size: 12px;
+	box-shadow: inset 0px 0px 6px #808080;
 }
 
 

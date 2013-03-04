@@ -2,8 +2,7 @@ body{
 	width:auto;
 	height:100%;
 	text-align:center;
-	background-image:url('http://learn.zu.ac.ae/themes/as_2012/images/bblearn_2011_bg.png');
-	background-color: #f0f0f0;
+	background-image:url('../res/pattern.png');
 	font-size: 12px;
 }
 
@@ -29,7 +28,7 @@ body{
 
 #content{
 	width: 100%;
-	height: 90%;
+	height: 100%;
 	/*background:yellow;*/
 }
 
