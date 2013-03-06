@@ -5,7 +5,6 @@ var toField = document.getElementById("txt_to");
 var ccField = document.getElementById("txt_cc");
 var bccField = document.getElementById("txt_bcc");
 var subjectField = document.getElementById("txt_subject");
-var textarea = document.getElementById("txt_message");
 
 var allEmails = new Array();
 var invalidEmails = new Array();
@@ -75,15 +74,14 @@ function getAllEmails()
 	}
 }
 
-function subjectFieldBlank(){
-	if(subjectField.value.trim()=="")
-		return confirm("Are you sure you want to send this email without a subject?");
-}
-
 function subjectAndBodyBlank()
 {
 	subjectEmpty = (subjectField.value.trim() == "");
-	messageEmpty = (textarea.value.trim() == '');
+
+	var editor = new nicEditors.findEditor('txt_message');
+	//default text in editor is <br>
+	messageEmpty = editor? (editor.getContent() == "<br>"): false;
+
 
 	if(!subjectEmpty && !messageEmpty)
 		return false;
