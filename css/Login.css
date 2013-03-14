@@ -20,6 +20,7 @@ body{
 	height: 500px;
 	margin: 0 auto;
 	padding: 0.5em;
+	font-family: "Trebuchet MS", Helvetica, sans-serif;
 }
 
 
@@ -52,6 +53,7 @@ body{
 
 
 #logoPanel h1{
+	font-family: ubuntu,"Trebuchet MS", Helvetica, sans-serif;
 	font-size: 70px;
 	font-weight: bold;
 	padding:0.5em;

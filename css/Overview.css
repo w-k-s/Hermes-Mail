@@ -4,6 +4,7 @@ body{
 	text-align:center;
 	background-image:url('../res/pattern.png');
 	font-size: 12px;
+	font-family: "Trebuchet MS", Helvetica, sans-serif;
 }
 
 #wrapper{
@@ -18,6 +19,7 @@ body{
 	text-align:center;
 	width:30%;
 	height:auto;
+	font-family: ubuntu,"Trebuchet MS", Helvetica, sans-serif;
 }
 
 #header{

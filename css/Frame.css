@@ -15,6 +15,7 @@ body{
 #title{
 	float:left;
 	height: 100%;
+	font-family: ubuntu;
 }
 
 #title h1{
@@ -24,6 +25,7 @@ body{
 #userPanel{
 	float:right;
 	overflow: hidden;
+	font-family: "Trebuchet MS", Helvetica, sans-serif;
 	font-size: 12px;
 	padding-right:3em;
 	height: 100%;
@@ -32,6 +34,7 @@ body{
 #userPanel a{
 	color: yellow;
 	text-decoration: none;
+
 }
 
 #userPanel a:active, a:hover{
@@ -47,6 +50,7 @@ body{
 	width:11%;
 	height:95%;
 	float:left;
+	font-family: "Trebuchet MS", Helvetica, sans-serif;
 	text-align: left;
 	line-height:2em;
 	padding-left: 1em;
@@ -56,6 +60,7 @@ body{
 #content{
 	width:auto;
 	height:95%;
+	font-family: "Trebuchet MS", Helvetica, sans-serif;
 	font-size:12px;
 	overflow:scroll;
 	overflow-x: hidden;
@@ -75,6 +80,7 @@ body{
 	background: white;
 	width:auto;
 	height:3%;
+	font-family: "Trebuchet MS", Helvetica, sans-serif;
 	text-align:center;
 	padding: 0.5em;
 	box-shadow: inset 0px 3px 6px #909090;
