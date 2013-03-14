@@ -221,7 +221,6 @@ $smtp->Connect().'<br/>';
 echo $smtp->Log['Connect'].'<br/>';
 $smtp->Helo().'<br/>';
 echo $smtp->Log['Helo'].'<br/>';
-$smtp->Login("waqqas.abdulkareem@gmail.com","Silmarilis");
 echo $smtp->Log['Password'].'<br/>';
 
 $from = "waqqas.abdulkareem@gmail.com";
