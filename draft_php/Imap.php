@@ -1,5 +1,16 @@
 <?php
 
+/*
+* Name: IMAP PHP
+* Author: Waqqas Sheikh
+* Description: 
+* - read email:header/body
+* - delete email
+* Comments:
+* - There're a lot of repeated validation checks.
+* - I'm not sure using Regex to extract the content is the most efficient way. 
+*/
+
 class Imap{
 	
 	const ResponseSize = 4096;
@@ -78,18 +89,6 @@ class Imap{
 
 	function Header($aMailbox, $aMessageId)
 	{
-		if(!$this->_connected)
-		{
-			$this->error = array('erorr'=>'Not connected to server.');
-			return false;
-		}
-
-		if(!$this->_authenticated)
-		{
-			$this->error = array('error' => 'Not signed in.');
-			return false;
-		}
-
 		//select mailbox
 		if(!$this->SelectMailbox($aMailbox))
 			return false;
@@ -111,8 +110,8 @@ class Imap{
 		switch ($response['code']) 
 		{
 			case self::OK:
-				preg_match('/To: (.*)/', $response['response'],$to);
-				preg_match('/From: (.*)/', $response['response'],$from);
+				preg_match('/To: (.+?@.+)/', $response['response'],$to);
+				preg_match('/From: (.+?@.+)/', $response['response'],$from);
 				preg_match('/Subject: (.*)/', $response['response'],$subject);
 				preg_match('/Date: (.*)/', $response['response'],$date);
 				return array('number'=>$aMessageId,
@@ -121,8 +120,8 @@ class Imap{
 					'subject'=>$subject[1],
 					'date'=>$date[1]);
 				
-				
-				/*
+
+				/* This doesn't work! 
 				preg_match('/Date:(.*)\nTo:(.*)\nFrom:(.*)\nSubject:(.*)/', $response['response'],$matches);
 				return array('number'=>$aMessageId,
 					'date:'=>$matches[1],
@@ -130,6 +129,7 @@ class Imap{
 					'from'=>$matches[3],
 					'subject'=>$matches[4]);
 				*/
+
 			case self::NO:
 				$this->error = array('error'=>'This folder does not exist.');
 				return false;
@@ -146,7 +146,42 @@ class Imap{
 
 	function Message($aMailbox, $aMessageId)
 	{
+		//select mailbox
+		if(!$this->SelectMailbox($aMailbox))
+			return false;
 
+		//get number of messages
+		$num_msgs = $this->NumberMessages($aMailbox);
+
+		//checks messages in range
+		if($aMessageId<0 || $aMessageId>$num_msgs)
+		{
+			$this->error = array('error'=>'A message with this ID does not exist');
+			return false;
+		}
+		
+		$number = $this->InstructionNumber();
+		fputs($this->_connection,"$number FETCH $aMessageId body[text]".self::CRLF);
+		$response = $this->Response($number);
+
+		switch ($response['code']) 
+		{
+			case self::OK:
+				echo 'R: '.$response['response'];
+				break;
+
+			case self::NO:
+				$this->error = array('error'=>'This folder does not exist.');
+				return false;
+
+			case self::BAD:
+				$this->error = array('error'=>'BAD! You shouldn\'t see this.');
+				return false;
+
+			default:
+				$this->error = array('error'=>'Unrecognised response code');
+				return false;
+		}
 	}
 
 	private function Response($aInstructionNumber)
@@ -175,6 +210,17 @@ class Imap{
 
 	private function SelectMailbox($aMailbox)
 	{
+		if(!$this->_connected)
+		{
+			$this->error = array('erorr'=>'Not connected to server.');
+			return false;
+		}
+
+		if(!$this->_authenticated)
+		{
+			$this->error = array('error' => 'Not signed in.');
+			return false;
+		}
 
 		$number = $this->InstructionNumber();
 		$aMailbox = strtoupper($aMailbox);
@@ -239,8 +285,10 @@ class Imap{
 }
 
 $stuff = new Imap();
-echo $stuff->Connect('ssl://imap.gmail.com',993);
-echo $stuff->Login('waqqas.abdulkareem','AI48sd67yk73');
-echo 'N: '.print_r($stuff->Header("INBOX",808));
+echo '<strong>Connect: </strong><br/>'.$stuff->Connect('ssl://imap.gmail.com',993).'<br/>';
+echo '<strong>Login: </strong><br/>'.$stuff->Login('maryam.kawther','Silmarilis').'<br/>';
+echo '<strong>Header: </strong><br/>'.print_r($stuff->Header("INBOX",1)).'<br/>';
+echo '<strong>Message: </strong><br/>'.$stuff->Message("INBOX",1).'<br/>';
+echo '<strong>Error: </strong><br/>'.$stuff->error['error'];
 
 ?>
