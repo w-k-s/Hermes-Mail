@@ -90,18 +90,46 @@ class Imap{
 			return false;
 		}
 
+		//select mailbox
 		if(!$this->SelectMailbox($aMailbox))
 			return false;
 
-		//select mail
+		//get number of messages
+		$num_msgs = $this->NumberMessages($aMailbox);
+
+		//checks messages in range
+		if($aMessageId<0 || $aMessageId>$num_msgs)
+		{
+			$this->error = array('error'=>'A message with this ID does not exist');
+			return false;
+		}
+		
+		$number = $this->InstructionNumber();
+		fputs($this->_connection,"$number FETCH $aMessageId (body[header.fields (from to subject date)])".self::CRLF);
+		$response = $this->Response($number);
 
 		switch ($response['code']) 
 		{
 			case self::OK:
-				$preg_match("/To:(.*?)<br\/>From:(.*?)<br\/>Subject:(.*?)<br\/>/i",$response['response'],$matches);
-				return array('to'=>$matches[1],'from'=>$matches[2],'subject'=>$matches[3]);
-				break;
+				preg_match('/To: (.*)/', $response['response'],$to);
+				preg_match('/From: (.*)/', $response['response'],$from);
+				preg_match('/Subject: (.*)/', $response['response'],$subject);
+				preg_match('/Date: (.*)/', $response['response'],$date);
+				return array('number'=>$aMessageId,
+					'from:'=>$from[1],
+					'to'=>$to[1],
+					'subject'=>$subject[1],
+					'date'=>$date[1]);
 				
+				
+				/*
+				preg_match('/Date:(.*)\nTo:(.*)\nFrom:(.*)\nSubject:(.*)/', $response['response'],$matches);
+				return array('number'=>$aMessageId,
+					'date:'=>$matches[1],
+					'to'=>$matches[2],
+					'from'=>$matches[3],
+					'subject'=>$matches[4]);
+				*/
 			case self::NO:
 				$this->error = array('error'=>'This folder does not exist.');
 				return false;
@@ -114,8 +142,6 @@ class Imap{
 				$this->error = array('error'=>'Unrecognised response code');
 				return false;
 		}
-
-
 	}
 
 	function Message($aMailbox, $aMessageId)
@@ -177,16 +203,23 @@ class Imap{
 
 	private function NumberMessages($aMailbox)
 	{
+		return 811;
+		/*
 		$number = $this->InstructionNumber();
 		$aMailbox = strtoupper($aMailbox);
 
-		fputs($this->_connection,"$number status $aMailbox messages".self::CRLF);
+		fputs($this->_connection,"$number status $aMailbox MESSAGES".self::CRLF);
 		$response = $this->Response($number);
+
+		echo "$number status $aMailbox MESSAGES";
+		echo $response['response'];
 
 		switch ($response['code'])
 		{
 			case self::OK:
-				
+				preg_match('/(Messages ([0-9]*)?)/i', $response['response'],$matches);
+				if(is_numeric($num_messages = $matches[1]))
+					return $num_messages;
 				break;
 			
 			case self::NO:
@@ -201,11 +234,13 @@ class Imap{
 				$this->error = array('error'=>'Unrecognised response code');
 				return false;
 		}
-
+		*/
 	}
 }
 
 $stuff = new Imap();
 echo $stuff->Connect('ssl://imap.gmail.com',993);
+echo $stuff->Login('waqqas.abdulkareem','AI48sd67yk73');
+echo 'N: '.print_r($stuff->Header("INBOX",808));
 
 ?>
