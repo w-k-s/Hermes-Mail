@@ -9,10 +9,7 @@
 */
 
 class Smtp{
-	const SmtpServer = 'ssl://smtp.gmail.com';
-	const SmtpPort = 465;
 	const TimeOut = 45;
-	const NewLine = "\r\n";
 	const LocalHost = '127.0.0.1';
 	const ResponseSize = 4096;
 
@@ -23,12 +20,15 @@ class Smtp{
 	private $Connected = false;
 
 	//Connect with Smtp 
-	public function Connect()
+	public function Connect($SmtpServer,$SmtpPort)
 	{
 		if(!$this->Connected)
 		{
-			$this->SmtpConnection = fsockopen(self::SmtpServer,self::SmtpPort,$errno, $errstr,self::TimeOut);
-			$SmtpResponse = fgets($this->SmtpConnection,self::ResponseSize);
+			if($SmtpServer == NULL) $SmtpServer = self::LocalHost;
+			if($SmtpPORT == NULL) $SmtpServer = 25;
+
+			$this->SmtpConnection = @fsockopen($SmtpServer,$SmtpPort,$errno, $errstr,self::TimeOut);
+			$SmtpResponse = @fgets($this->SmtpConnection,self::ResponseSize);
 
 			$this->Log['Connect'] = $SmtpResponse;
 
@@ -54,8 +54,8 @@ class Smtp{
 			return false;
 		}
 
-		fputs($this->SmtpConnection,"HELO $LocalHost\r\n");
-		$SmtpResponse = fgets($this->SmtpConnection,self::ResponseSize);
+		@fputs($this->SmtpConnection,"HELO $LocalHost\r\n");
+		$SmtpResponse = @fgets($this->SmtpConnection,self::ResponseSize);
 
 		$this->Log['Helo'] = $SmtpResponse;
 
@@ -81,8 +81,8 @@ class Smtp{
 			return false;
 		}
 
-		fputs($this->SmtpConnection,"AUTH LOGIN\r\n");
-		$SmtpResponse = fgets($this->SmtpConnection,self::ResponseSize);
+		@fputs($this->SmtpConnection,"AUTH LOGIN\r\n");
+		$SmtpResponse = @fgets($this->SmtpConnection,self::ResponseSize);
 		$this->Log['Login'] = $SmtpResponse;
 
 		if(!$this->ResponseCode($SmtpResponse)=="334")
@@ -94,8 +94,8 @@ class Smtp{
 			return false;
 		}
 
-		fputs($this->SmtpConnection,base64_encode($username)."\r\n");
-		$SmtpResponse = fgets($this->SmtpConnection,self::ResponseSize);
+		@fputs($this->SmtpConnection,base64_encode($username)."\r\n");
+		$SmtpResponse = @fgets($this->SmtpConnection,self::ResponseSize);
 		$this->Log['Username'] = $SmtpResponse;
 
 		if(!$this->ResponseCode($SmtpResponse)=="334")
@@ -107,8 +107,8 @@ class Smtp{
 			return false;
 		}
 
-		fputs($this->SmtpConnection,base64_encode($password)."\r\n");
-		$SmtpResponse = fgets($this->SmtpConnection,self::ResponseSize);
+		@fputs($this->SmtpConnection,base64_encode($password)."\r\n");
+		$SmtpResponse = @fgets($this->SmtpConnection,self::ResponseSize);
 		$this->Log['Password'] = $SmtpResponse;
 
 		if ($this->ResponseCode($SmtpResponse)=="235")
@@ -145,22 +145,22 @@ class Smtp{
 			return false;
 		}
 
-		fputs($this->SmtpConnection,"MAIL FROM:<$from>\r\n");
-		$SmtpResponse = fgets($this->SmtpConnection,self::ResponseSize);
+		@fputs($this->SmtpConnection,"MAIL FROM:<$from>\r\n");
+		$SmtpResponse = @fgets($this->SmtpConnection,self::ResponseSize);
 		$this->Log['From'] = $SmtpResponse;
 
 		if($this->ResponseCode($SmtpResponse)!="250")
 			return false;
 
-		fputs($this->SmtpConnection,"RCPT TO:<$to>\r\n");
-		$SmtpResponse = fgets($this->SmtpConnection,self::ResponseSize);
+		@fputs($this->SmtpConnection,"RCPT TO:<$to>\r\n");
+		$SmtpResponse = @fgets($this->SmtpConnection,self::ResponseSize);
 		$this->Log['To'] = $SmtpResponse;
 
 		if($this->ResponseCode($SmtpResponse) != "250")
 			return false;
 
-		fputs($this->SmtpConnection,"DATA\r\n");
-		$SmtpResponse = fgets($this->SmtpConnection,self::ResponseSize);
+		@fputs($this->SmtpConnection,"DATA\r\n");
+		$SmtpResponse = @fgets($this->SmtpConnection,self::ResponseSize);
 		$this->Log['Data'] = $SmtpResponse;
 
 		if($this->ResponseCode($SmtpResponse) != "354")
@@ -168,8 +168,8 @@ class Smtp{
 
 		$header = $this->CreateHeader($from,$to,$subject);
 
-		fputs($this->SmtpConnection,"To: $to\r\nFrom: $from\r\nSubject: $subject\r\n$header\r\n\r\n$message\r\n.\r\n");
-		$SmtpResponse = fgets($this->SmtpConnection,self::ResponseSize);
+		@fputs($this->SmtpConnection,"To: $to\r\nFrom: $from\r\nSubject: $subject\r\n$header\r\n\r\n$message\r\n.\r\n");
+		$SmtpResponse = @fgets($this->SmtpConnection,self::ResponseSize);
 		$this->Log['Message'] = $SmtpResponse;
 
 		if($this->ResponseCode($SmtpResponse)=="250")
@@ -190,11 +190,11 @@ class Smtp{
 		if(!$this->Connected)
 			return;	
 
-		fputs($this->SmtpConnection,"QUIT\r\n");
-		$SmtpResponse = fgets($this->SmtpConnection,self::ResponseSize);
+		@fputs($this->SmtpConnection,"QUIT\r\n");
+		$SmtpResponse = @fgets($this->SmtpConnection,self::ResponseSize);
 		$this->Log['Quit'] = $SmtpResponse;
 
-		fclose($this->SmtpConnection);
+		@fclose($this->SmtpConnection);
 		$this->Connected = false;
 	
 	}
@@ -215,26 +215,4 @@ class Smtp{
 	}
 
 }
-
-$smtp = new Smtp();
-$smtp->Connect().'<br/>';
-echo $smtp->Log['Connect'].'<br/>';
-$smtp->Helo().'<br/>';
-echo $smtp->Log['Helo'].'<br/>';
-$smtp->Login("waqqas.abdulkareem@gmail.com","Silmarilis");
-echo $smtp->Log['Password'].'<br/>';
-
-$from = "waqqas.abdulkareem@gmail.com";
-$to = "developer.wks@gmail.com";
-$subject = "shit";
-$message = "let's see";
-
-echo $smtp->SendMail($from,$to,$subject,$message);
-echo 'from: '.$smtp->Log['From'].'<br/>';
-echo 'to: '.$smtp->Log['To'].'<br/>';
-echo 'data: '.$smtp->Log['Data'].'<br/>';
-echo 'msg: '.$smtp->Log['Message'].'<br/>';
-
-
-
 ?>
