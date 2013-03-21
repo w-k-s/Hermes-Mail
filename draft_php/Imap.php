@@ -9,7 +9,7 @@
 * Comments:
 * - There're a lot of repeated validation checks.
 * - I'm not sure using Regex to extract the content is the most efficient way. 
-* - There has got to be a better way of finding out the number of messages in the mailbox.
+* - what if preg_match returns 0 <- handle it!
 */
 
 class Imap{
@@ -303,6 +303,8 @@ class Imap{
 					$flags = explode(' ',$matches[1]);
 					return $flags;
 				}
+				$this->error = array('error'=>'FATAL: Flags could not be determined from respose.');
+				return false;
 
 			case self::NO:
 			case self::BAD:
@@ -346,8 +348,10 @@ class Imap{
 		{
 			case self::OK:
 
-				preg_match('/Messages ([0-9]+)/i', $response['response'],$matches);
-				return is_numeric($matches[1])?$matches[1]:false;
+				if(preg_match('/Messages ([0-9]+)/i', $response['response'],$matches)!= 0)
+					return $matches[1];
+				$this->error = array('error'=>'FATAL: Number of messages could not be determined!');
+				return false;
 			
 			case self::NO:
 			case self::BAD:
@@ -361,16 +365,7 @@ class Imap{
 	function logout()
 	{
 		if(!$this->_connected)
-		{
-			$this->error = array('erorr'=>'Not connected to server.');
-			return false;
-		}
-
-		if(!$this->_authenticated)
-		{
-			$this->error = array('error' => 'Not signed in.');
-			return false;
-		}
+			return true;
 
 		$instruction = $this->get_instruction_num();
 		fputs($this->_connection,"$instruction LOGOUT".self::CRLF);
@@ -441,24 +436,15 @@ class Imap{
 		switch ($response['code'])
 		{
 			case self::OK:
-				preg_match('/\* ([0-9]+?) EXISTS/', $response['response'],$matches);
-				 return is_numeric($matches[1])?$matches[1]:false;
-			
+				return true;
+
 			case self::NO:
-				$this->error = array('error'=>'This mailbox does not exist.');
-				return false;
-
 			case self::BAD:
-				$this->error = array('error'=>'BAD! You shouldn\'t see this!');
-				return false;
-
 			default:
-				$this->error = array('error'=>'Unrecognised response code');
+				$this->error = array('error'=>$response['response']);
 				return false;
 		}
 	}
 
 }
-
-
 ?>
