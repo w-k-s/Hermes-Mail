@@ -9,34 +9,53 @@
 * Comments:
 * - There're a lot of repeated validation checks.
 * - I'm not sure using Regex to extract the content is the most efficient way. 
+* - There has got to be a better way of finding out the number of messages in the mailbox.
 */
 
 class Imap{
 	
-	const ResponseSize = 4096;
-	const LocalHost = '127.0.0.1';
+	const RESPONSE_SIZE = 4096;
+	const LOCAL_HOST = '127.0.0.1';
 	const CRLF = "\r\n";
+
+	//------------RESPONSE CODES---------//
 	const OK = "OK";
 	const BAD = "BAD";
 	const NO = "NO";
 
+	//----------------FLAGS--------------//
+	const FLAG_ANSWERED = "\\Answered";
+	const FLAG_FLAGGED = "\\Flagged";
+	const FLAG_DRAFT = "\\Draft";
+	const FLAG_DELETED = "\\Deleted";
+	const FLAG_SEEN = "\\Seen";
+
+	//------------- PRIVATE VARS ------------//
 	private $_connection = NULL;
 	private $_number = 0;
-	private $_instructionNumber;
+	private $_instruction_num;
 
 	private $_connected = false;
 	private $_authenticated = false;
 	
+	//------------- PUBLIC VARS ------------//
+
 	public $error = array();
 
-	function Connect($aImapServer, $aImapPort)
+	function __destruct()
+	{
+		if($this->_connected)
+			$this->logout();
+	}
+
+	function connect($imap_server, $imap_port)
 	{
 		if(!$this->_connected)
 		{
-			if($aImapServer == NULL) $aImapServer = self::LocalHost;
-			if($aImapPort == NULL) $aImapPort = 993;
+			if($imap_server == NULL) 	$imap_server = self::LOCAL_HOST;
+			if($imap_port == NULL)		$imap_port = 993;
 
-			$this->_connection = fsockopen($aImapServer,$aImapPort);
+			$this->_connection = fsockopen($imap_server,$imap_port);
 		
 			if(empty($this->_connection))
 				$this->error = array('error' => 'Connection to server could not be established');
@@ -48,7 +67,7 @@ class Imap{
 		return $this->_connected;
 	}
 
-	function Login($aUsername, $aPassword)
+	function login($username, $password)
 	{
 		if(!$this->_connected)
 		{
@@ -58,9 +77,9 @@ class Imap{
 
 		if(!$this->_authenticated)
 		{
-			$number = $this->InstructionNumber();
-			fputs($this->_connection,"$number LOGIN $aUsername $aPassword".self::CRLF);
-			$response = $this->Response($number);
+			$instruction = $this->get_instruction_num();
+			fputs($this->_connection,"$instruction LOGIN $username $password".self::CRLF);
+			$response = $this->get_response($instruction);
 
 			switch ($response['code']) {
 				case self::OK:
@@ -73,13 +92,9 @@ class Imap{
 					break;
 
 				case self::BAD:
+				default: 
 					$this->_authenticated = false;
-					$this->error = array('error'=>'BAD! You shouldn\'t see this.');
-				break;
-
-				default:
-					$this->_authenticated = false;
-					$this->error = array('error'=>'default.');
+					$this->error = array('error'=>$response['response']);
 				break;
 			}
 		}
@@ -87,128 +102,182 @@ class Imap{
 		return $this->_authenticated;
 	}
 
-	function Header($aMailbox, $aMessageId)
+	function get_header($mailbox, $message_num)
 	{
 		//select mailbox
-		if(!$this->SelectMailbox($aMailbox))
+		if(!$this->select_mailbox($mailbox))
 			return false;
 
 		//get number of messages
-		$num_msgs = $this->NumberMessages($aMailbox);
+		if(!($num_msgs = $this->get_num_messages($mailbox)))
+			return false;
 
 		//checks messages in range
-		if($aMessageId<0 || $aMessageId>$num_msgs)
+		if($message_num < 0 || $message_num > $num_msgs)
 		{
-			$this->error = array('error'=>'A message with this ID does not exist');
+			$this->error = array('error'=>'This message does not exist.');
 			return false;
 		}
 		
-		$number = $this->InstructionNumber();
-		fputs($this->_connection,"$number FETCH $aMessageId (body[header.fields (from to subject date)])".self::CRLF);
-		$response = $this->Response($number);
+		$instruction = $this->get_instruction_num();
+		fputs($this->_connection,"$instruction FETCH $message_num (body[header.fields (from to subject date)])".self::CRLF);
+		$response = $this->get_response($instruction);
 
 		switch ($response['code']) 
 		{
 			case self::OK:
+				
 				preg_match('/To: (.+?@.+)/', $response['response'],$to);
 				preg_match('/From: (.+?@.+)/', $response['response'],$from);
 				preg_match('/Subject: (.*)/', $response['response'],$subject);
 				preg_match('/Date: (.*)/', $response['response'],$date);
-				return array('number'=>$aMessageId,
-					'from:'=>$from[1],
+				return array('number'=>$message_num,
+					'from'=>$from[1],
 					'to'=>$to[1],
 					'subject'=>$subject[1],
 					'date'=>$date[1]);
-				
-
-				/* This doesn't work! 
-				preg_match('/Date:(.*)\nTo:(.*)\nFrom:(.*)\nSubject:(.*)/', $response['response'],$matches);
-				return array('number'=>$aMessageId,
-					'date:'=>$matches[1],
-					'to'=>$matches[2],
-					'from'=>$matches[3],
-					'subject'=>$matches[4]);
-				*/
 
 			case self::NO:
 				$this->error = array('error'=>'This folder does not exist.');
 				return false;
 
 			case self::BAD:
-				$this->error = array('error'=>'BAD! You shouldn\'t see this.');
-				return false;
-
 			default:
-				$this->error = array('error'=>'Unrecognised response code');
+				$this->error = array('error'=>$response['response']);
 				return false;
 		}
 	}
 
-	function Message($aMailbox, $aMessageId)
+
+	function get_headers($mailbox, $from, $to)
 	{
 		//select mailbox
-		if(!$this->SelectMailbox($aMailbox))
+		if(!$this->select_mailbox($mailbox))
 			return false;
 
-		//get number of messages
-		$num_msgs = $this->NumberMessages($aMailbox);
+		if(!($num_msgs = $this->get_num_messages($mailbox)))
+			return false;
 
 		//checks messages in range
-		if($aMessageId<0 || $aMessageId>$num_msgs)
+		if($from < 0 || $to < 0 || $from > $num_msgs || $to > $num_msgs)
+		{
+			$this->error = array('error'=>"List out of range. Total Messages: $num_msgs. Messages Requested: $from - $to.");
+			return false;
+		}
+
+		$instruction = $this->get_instruction_num();
+		$mailbox = strtoupper($mailbox);
+
+		fputs($this->_connection,"$instruction FETCH $from:$to (body[header.fields (from to subject date)])".self::CRLF);
+		$response = $this->get_response($instruction);	
+	
+		switch ($response['code']) {
+			case self::OK:
+				
+				$headers = explode('*',$response['response']);
+				$headers_list = array();
+				foreach ($headers as $header) {
+					//the first header is blank
+					if($header == "")
+						continue;
+					//get the id, date, from, to, subject
+					preg_match('/([0-9]*?) FETCH /i', $header,$message_num);
+					preg_match('/To: (.+?@.+)/', $header,$to);
+					preg_match('/From: (.+?@.+)/', $header,$from);
+					preg_match('/Subject: (.*)/', $header,$subject);
+					preg_match('/Date: (.*)/', $header,$date);
+					$mail = array('number'=>$message_num[1],
+					'from'=>$from[1],
+					'to'=>$to[1],
+					'subject'=>$subject[1],
+					'date'=>$date[1]);
+					array_push($headers_list, $mail);
+				}
+
+				return $headers_list;
+			
+			case self::NO:
+			case self::BAD:
+			default:
+				$this->error = array('error'=>$response['response']);
+				return false;
+				break;
+		}
+	}
+
+	function get_message_body($mailbox, $message_num)
+	{
+		//select mailbox
+		if(!$this->select_mailbox($mailbox))
+			return false;
+
+		if(!($num_msgs = $this->get_num_messages($mailbox)))
+			return false;
+
+		//checks messages in range
+		if($message_num<0 || $message_num>$num_msgs)
 		{
 			$this->error = array('error'=>'A message with this ID does not exist');
 			return false;
 		}
 		
-		$number = $this->InstructionNumber();
-		fputs($this->_connection,"$number FETCH $aMessageId body[text]".self::CRLF);
-		$response = $this->Response($number);
+		$instruction = $this->get_instruction_num();
+		fputs($this->_connection,"$instruction FETCH $message_num body[text]".self::CRLF);
+		$response = $this->get_response($instruction);
 
 		switch ($response['code']) 
 		{
 			case self::OK:
-				echo 'R: '.$response['response'];
-				break;
+				return $response['response'];
 
 			case self::NO:
 				$this->error = array('error'=>'This folder does not exist.');
 				return false;
 
 			case self::BAD:
-				$this->error = array('error'=>'BAD! You shouldn\'t see this.');
-				return false;
-
 			default:
-				$this->error = array('error'=>'Unrecognised response code');
+				$this->error = array('error'=>$response['response']);
 				return false;
 		}
 	}
 
-	private function Response($aInstructionNumber)
+	function add_flag($mailbox, $message_num,$flag)
 	{
-		$end_of_response = false;
+		//select mailbox
+		if(!$this->select_mailbox($mailbox))
+			return false;
 
-		while (!$end_of_response)
+		if(!($num_msgs = $this->get_num_messages($mailbox)))
+			return false;
+
+		//checks messages in range
+		if($message_num < 0 || $message_num > $num_msgs)
 		{
-			$line = fgets($this->_connection,self::ResponseSize);
-			$response .= $line.'<br/>';
-
-			if(preg_match("/$aInstructionNumber (OK|NO|BAD)/", $response,$responseCode))
-				$end_of_response = true;
+			$this->error = array('error'=>'This message does not exist.');
+			return false;
 		}
 		
-		return array('code' => $responseCode[1],
-			'response'=>$response);
-	} 
+		$instruction = $this->get_instruction_num();
+		fputs($this->_connection,"$instruction STORE $message_num +FLAGS ($flag)".self::CRLF);
+		$response = $this->get_response($instruction);
 
-	private function InstructionNumber()
-	{
-		$this->_number++;
-		$this->_instructionNumber = "a".$this->_number;
-		return $this->_instructionNumber;
+		switch ($response['code']) 
+		{
+			case self::OK:
+				return true;
+
+			case self::NO:
+				$this->error = array('error'=>'This flag does not exist. Valid flags are: '.print_r(get_flags()).'.');
+				return false;
+
+			case self::BAD:
+			default:
+				$this->error = array('error'=>$response['response']);
+				return false;
+		}
 	}
 
-	private function SelectMailbox($aMailbox)
+	function get_flags($mailbox)
 	{
 		if(!$this->_connected)
 		{
@@ -222,51 +291,158 @@ class Imap{
 			return false;
 		}
 
-		$number = $this->InstructionNumber();
-		$aMailbox = strtoupper($aMailbox);
+		$instruction = $this->get_instruction_num();
+		fputs($this->_connection,"$instruction examine $mailbox".self::CRLF);
+		$response = $this->get_response($instruction);
 
-		fputs($this->_connection,"$number select $aMailbox".self::CRLF);
-		$response = $this->Response($number);
+		switch($response['code'])
+		{
+			case self::OK:
+				if(preg_match('/FLAGS \((.*?)\)/', $response['response'],$matches)!= 0)
+				{
+					$flags = explode(' ',$matches[1]);
+					return $flags;
+				}
 
-		switch ($response['code'])
+			case self::NO:
+			case self::BAD:
+			default:
+				$this->error = array('error'=>$response['response']);
+				return false;
+		}
+
+	}
+
+	function expunge()
+	{
+		$instruction = $this->get_instruction_num();
+		fputs($this->_connection,"$instruction EXPUNGE".self::CRLF);
+		$response = $this->get_response($instruction);
+
+		switch ($response['code']) 
 		{
 			case self::OK:
 				return true;
-			
+
 			case self::NO:
-				$this->error = array('error'=>'This mailbox does not exist.');
-				return false;
-
 			case self::BAD:
-				$this->error = array('error'=>'BAD! You shouldn\'t see this!');
+			default:
+				$this->error = array('error'=>$response['response']);
 				return false;
 
-			default:
-				$this->error = array('error'=>'Unrecognised response code');
-				return false;
 		}
 	}
 
-	private function NumberMessages($aMailbox)
+	function get_num_messages($mailbox)
 	{
-		return 811;
-		/*
-		$number = $this->InstructionNumber();
-		$aMailbox = strtoupper($aMailbox);
 
-		fputs($this->_connection,"$number status $aMailbox MESSAGES".self::CRLF);
-		$response = $this->Response($number);
+		$instruction = $this->get_instruction_num();
+		$mailbox = strtoupper($mailbox);
 
-		echo "$number status $aMailbox MESSAGES";
-		echo $response['response'];
+		fputs($this->_connection,"$instruction status $mailbox (messages)".self::CRLF);
+		$response = $this->get_response($instruction);
 
 		switch ($response['code'])
 		{
 			case self::OK:
-				preg_match('/(Messages ([0-9]*)?)/i', $response['response'],$matches);
-				if(is_numeric($num_messages = $matches[1]))
-					return $num_messages;
-				break;
+
+				preg_match('/Messages ([0-9]+)/i', $response['response'],$matches);
+				return is_numeric($matches[1])?$matches[1]:false;
+			
+			case self::NO:
+			case self::BAD:
+			default:
+				$this->error = array('error'=>$response['response']);
+				return false;
+		}
+		
+	}
+
+	function logout()
+	{
+		if(!$this->_connected)
+		{
+			$this->error = array('erorr'=>'Not connected to server.');
+			return false;
+		}
+
+		if(!$this->_authenticated)
+		{
+			$this->error = array('error' => 'Not signed in.');
+			return false;
+		}
+
+		$instruction = $this->get_instruction_num();
+		fputs($this->_connection,"$instruction LOGOUT".self::CRLF);
+		$response = $this->get_response($instruction);
+
+
+		switch($response['code'])
+		{
+			case self::OK:
+				$this->_connected = !fclose($this->_connection);
+				if(!$this->_connected) $this->_authenticated = false;
+
+				return true;
+
+			case self::NO:
+			case self::BAD:
+			default:
+				$this->error = array('error'=>$response['response']);
+				return false;
+
+		}
+	}
+
+	private function get_response($aInstructionNumber)
+	{
+		$end_of_response = false;
+
+		while (!$end_of_response)
+		{
+			$line = fgets($this->_connection,self::RESPONSE_SIZE);
+			$response .= $line.'<br/>';
+
+			if(preg_match("/$aInstructionNumber (OK|NO|BAD)/", $response,$responseCode))
+				$end_of_response = true;
+		}
+		
+		return array('code' => $responseCode[1],
+			'response'=>$response);
+	} 
+
+	private function get_instruction_num()
+	{
+		$this->_number++;
+		$this->_instruction_num = "a".$this->_number;
+		return $this->_instruction_num;
+	}
+
+	private function select_mailbox($mailbox)
+	{
+		if(!$this->_connected)
+		{
+			$this->error = array('erorr'=>'Not connected to server.');
+			return false;
+		}
+
+		if(!$this->_authenticated)
+		{
+			$this->error = array('error' => 'Not signed in.');
+			return false;
+		}
+
+		$instruction = $this->get_instruction_num();
+		$mailbox = strtoupper($mailbox);
+
+		fputs($this->_connection,"$instruction select $mailbox".self::CRLF);
+		$response = $this->get_response($instruction);
+
+		switch ($response['code'])
+		{
+			case self::OK:
+				preg_match('/\* ([0-9]+?) EXISTS/', $response['response'],$matches);
+				 return is_numeric($matches[1])?$matches[1]:false;
 			
 			case self::NO:
 				$this->error = array('error'=>'This mailbox does not exist.');
@@ -280,15 +456,9 @@ class Imap{
 				$this->error = array('error'=>'Unrecognised response code');
 				return false;
 		}
-		*/
 	}
+
 }
 
-$stuff = new Imap();
-echo '<strong>Connect: </strong><br/>'.$stuff->Connect('ssl://imap.gmail.com',993).'<br/>';
-echo '<strong>Login: </strong><br/>'.$stuff->Login('maryam.kawther','Silmarilis').'<br/>';
-echo '<strong>Header: </strong><br/>'.print_r($stuff->Header("INBOX",1)).'<br/>';
-echo '<strong>Message: </strong><br/>'.$stuff->Message("INBOX",1).'<br/>';
-echo '<strong>Error: </strong><br/>'.$stuff->error['error'];
 
 ?>
