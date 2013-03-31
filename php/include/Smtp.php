@@ -9,6 +9,7 @@
 */
 
 class Smtp{
+	const Port = 465;
 	const TimeOut = 45;
 	const LocalHost = '127.0.0.1';
 	const ResponseSize = 4096;
@@ -18,41 +19,61 @@ class Smtp{
 	private $Error = NULL;
 
 	private $Connected = false;
+	private $Authenticated = false;
+
+	private $MailServer;
+	private $MailPort;
 
 	//Connect with Smtp 
-	public function Connect($SmtpServer,$SmtpPort)
+	public function __construct($MailServer,$MailPort)
 	{
+
+		if($MailServer == NULL) $MailServer = self::LocalHost;
+		if($MailPort == NULL) $MailPort = self::Port;
+
+		$this->MailServer = $MailServer;
+		$this->MailPort = $MailPort;
+
+		if(!$this->Connect($this->MailServer,$this->MailPort) 
+			|| !$this->Helo())
+		{
+
+			throw new Exception('Failure to connect to server');
+		}
+	}
+
+	function __destruct()
+	{
+		if($this->Connected)
+			$this->Disconnect();
+		
+	}
+
+	private function Connect($SmtpServer,$SmtpPort)
+	{
+
+		if($SmtpServer == NULL) $SmtpServer = self::LocalHost;
+		if($SmtpPort == NULL) $SmtpPort = 25;
+
+		$this->SmtpConnection = fsockopen($SmtpServer,$SmtpPort,$errno, $errstr,self::TimeOut);
+		$SmtpResponse = @fgets($this->SmtpConnection,self::ResponseSize);
+
+		$this->Log['Connect'] = $SmtpResponse;
+
+		$this->Connected = !empty($this->SmtpConnection);
 		if(!$this->Connected)
 		{
-			if($SmtpServer == NULL) $SmtpServer = self::LocalHost;
-			if($SmtpPORT == NULL) $SmtpServer = 25;
-
-			$this->SmtpConnection = @fsockopen($SmtpServer,$SmtpPort,$errno, $errstr,self::TimeOut);
-			$SmtpResponse = @fgets($this->SmtpConnection,self::ResponseSize);
-
-			$this->Log['Connect'] = $SmtpResponse;
-
-			$this->Connected = !empty($this->SmtpConnection);
-			if(!$this->Connected)
-			{
-				$this->Error = 
-				array('Error' => 'Connection to server could not be established.',
-					  'Code' => $this->ResponseCode($SmtpResponse),
-					  'Messafe' => $this->ResponseMessage($SmtpResponse));
-			}
-		}		
+			$this->Error = 
+			array('Error' => 'Connection to server could not be established.',
+				  'Code' => $this->ResponseCode($SmtpResponse),
+				  'Messafe' => $this->ResponseMessage($SmtpResponse));
+		}
 
 		return $this->Connected;
 	}
 
-	public function Helo()
+	private function Helo()
 	{
-		if(!$this->Connected)
-		{
-			$this->Error = 
-				array('Error'=>'Not connected to server.');
-			return false;
-		}
 
 		@fputs($this->SmtpConnection,"HELO $LocalHost\r\n");
 		$SmtpResponse = @fgets($this->SmtpConnection,self::ResponseSize);
@@ -78,6 +99,13 @@ class Smtp{
 		{
 			$this->Error = 
 				array('Error'=>'Not connected to server.');
+			return false;
+		}
+
+		if($this->Authenticated)
+		{
+			$this->Error = 
+				array('Error'=>'You must disconnect before trying to login again.');
 			return false;
 		}
 
@@ -112,7 +140,10 @@ class Smtp{
 		$this->Log['Password'] = $SmtpResponse;
 
 		if ($this->ResponseCode($SmtpResponse)=="235")
-			return true;
+		{
+			$this->Authenticated = true;
+			return $this->Authenticated;
+		}
 		else
 		{
 			$this->Error = 
@@ -142,6 +173,13 @@ class Smtp{
 		{
 			$this->Error = 
 				array('Error'=>'Not connected to server.');
+			return false;
+		}
+
+		if(!$this->Authenticated)
+		{
+			$this->Error = 
+				array('Error'=>'Must login before sending email.');
 			return false;
 		}
 

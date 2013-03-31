@@ -1,21 +1,15 @@
 var sendButton = document.getElementById("btn_send");
 var cancelButton = document.getElementById("btn_cancel");
 
-var toField = document.getElementById("txt_to");
-var ccField = document.getElementById("txt_cc");
-var bccField = document.getElementById("txt_bcc");
-var subjectField = document.getElementById("txt_subject");
-
-var allEmails = new Array();
-var invalidEmails = new Array();
-
 sendButton.addEventListener("click",doValidation,false);
 cancelButton.addEventListener("click",doCancel,false);
 
 function doValidation()
 {
-	allEmails = [];
-	invalidEmails = [];
+
+	to = document.getElementById("txt_to").value;
+	subject = document.getElementById("txt_subject").value;
+	message = document.getElementById("txt_message").value;
 
 	if(toFieldIsEmpty())
 	{
@@ -23,64 +17,39 @@ function doValidation()
 		return false;
 	}
 
-	if(!allEmailsValid())
+	if(!emailValid(to))
 	{
-		message = "The following emails are not valid:\n";
-		for(var i=0; i< invalidEmails.length; i++)
-			message += invalidEmails[i]+"\n";
+		error = "Receipant email is not valid:\n";
+		error += to+"\n";
 
-		alert(message);
+		alert(error);
 
 		return false;
 	}
 
 	if(!subjectAndBodyBlank())
 	{
-		alert("Message Sent!");
-		return true;
-	}
+		params = new Array();
+		params["to"] = to;
+		params["subject"] = subject;
+		params["body"] = message;
 
+		post(params);
+	}
 }
 
 function toFieldIsEmpty()
 {
-	return (toField.value.trim() == "");
+	return (to.trim() == "");
 }
 
-function allEmailsValid()
-{
-	getAllEmails();
-
-	for(i = 0; i < allEmails.length; i++)
-		if(!emailIsValid(allEmails[i]))
-			invalidEmails.push(allEmails[i]);
-
-	//if all emails are valid, invalid emails should be empty.
-	return (invalidEmails.length == 0);
-}
-
-function getAllEmails()
-{
-	var receipants = new Array(toField,ccField,bccField);
-
-	for(var i = 0; i<receipants.length; i++)
-	{
-		var emails = receipants[i].value.trim().split(",");
-		for(var j = 0; j < emails.length; j++)
-		{
-			if(emails[j] != "")
-				allEmails.push(emails[j].trim());
-		}
-	}
-}
 
 function subjectAndBodyBlank()
 {
-	subjectEmpty = (subjectField.value.trim() == "");
+	subjectEmpty = (subject.trim() == "");
 
-	var editor = new nicEditors.findEditor('txt_message');
 	//default text in editor is <br>
-	messageEmpty = editor? (editor.getContent() == "<br>"): false;
+	messageEmpty = (message == "<br>");
 
 
 	if(!subjectEmpty && !messageEmpty)
@@ -88,14 +57,14 @@ function subjectAndBodyBlank()
 
 	else
 	{
-		message = "Are you sure you want to send this email without ";
-		message += (subjectEmpty)? "a subject ":"";
-		message += (subjectEmpty && messageEmpty)? "and ":"";
-		message += (messageEmpty)? "a body": "";
+		error = "Are you sure you want to send this email without ";
+		error += (subjectEmpty)? "a subject ":"";
+		error += (subjectEmpty && messageEmpty)? "and ":"";
+		error += (messageEmpty)? "a body": "";
 
-		message += "?";
+		error += "?";
 
-		return !confirm(message);
+		return !confirm(error);
 	}
 }
 
@@ -103,4 +72,25 @@ function doCancel()
 {
 	if(confirm("Are you sure you want to cancel writing this message?"))
 		location.href='inbox.html';
+}
+
+function post(params)
+{
+	var form = document.createElement("form");
+	form.setAttribute("method","post");
+	form.setAttribute("action","compose.php");
+	
+	for(var key in params) {
+        if(params.hasOwnProperty(key)) {
+            var hiddenField = document.createElement("input");
+            hiddenField.setAttribute("type", "hidden");
+            hiddenField.setAttribute("name", key);
+            hiddenField.setAttribute("value", params[key]);
+
+            form.appendChild(hiddenField);
+         }
+    }
+
+    document.body.appendChild(form);
+    form.submit();
 }

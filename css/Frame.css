@@ -25,10 +25,11 @@ body{
 #userPanel{
 	float:right;
 	overflow: hidden;
-	font-family: "Trebuchet MS", Helvetica, sans-serif;
-	font-size: 12px;
+	font-family: "Calibri", Helvetica, sans-serif;
+	font-size: 13px;
 	padding-right:3em;
 	height: 100%;
+	text-align: right;
 }
 
 #userPanel a{
