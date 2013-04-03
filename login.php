@@ -25,7 +25,19 @@ if(isset($_POST['username']) && isset($_POST['password']))
 		{
 			$feedback = '<span style="color: #b22222">'.$imap->error().'</span>';
 		}else{
+			
+			$num_mails = $imap->get_num_messages($imap::MAILBOX_INBOX);
+			$inbox = $imap->get_headers($imap::MAILBOX_INBOX,"*",1);
+			if(!$num_mails || !is_array($inbox))
+			{
+				throw new Exception('Couldn\'t load inbox.');
+			}
+
+			$inbox = array_reverse($inbox);
+
 			//ENCRYPT
+			$_SESSION['num_msgs'] = $num_mails;
+			$_SESSION['mailbox'] = $inbox;
 			$_SESSION['username'] = $username;
 			$_SESSION['password'] = $password;
 			header('Location: inbox.php');

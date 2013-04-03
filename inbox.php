@@ -6,13 +6,17 @@ session_start();
 
 
 if(isset($_SESSION['username']) 
-	&& isset($_SESSION['password']))
+	&& isset($_SESSION['password'])
+	&& isset($_SESSION['num_msgs'])
+	&& isset($_SESSION['mailbox']))
 {
+	$num_cached_msgs = $_SESSION['num_msgs'];
+	$inbox = $_SESSION['mailbox'];
 	$username = $_SESSION['username'];
 	$password = $_SESSION['password'];
 	$imap_server = "ssl://imap.gmail.com";
 	$imap_port = 993;
-
+	
 	$imap = new Imap($imap_server,$imap_port);
 	if(!$imap->login($username,$password))
 	{
@@ -20,10 +24,19 @@ if(isset($_SESSION['username'])
 		die();
 	}
 
-	$inbox = $imap->get_headers($imap::MAILBOX_INBOX,"*",1);
+	$num_msgs = $imap->get_num_messages($imap::MAILBOX_INBOX);
+	if($num_msgs > $num_cached_msgs )
+	{
+		$num_new_msgs = $num_msgs - $num_cached_msgs;
+
+		$new_msgs = $imap->get_headers($imap::MAILBOX_INBOX,$num_msgs,($num_msgs - $num_new_msgs+1));
+		$new_msgs = array_reverse($new_msgs);
+		$inbox = array_merge($new_msgs,$inbox);
+		$_SESSION['mailbox'] = $inbox;
+	}
+
 	if(is_array($inbox))
 	{
-		$inbox = array_reverse($inbox);
 
 		$feedback = "<table id='table_inbox'>";
 
@@ -45,10 +58,11 @@ if(isset($_SESSION['username'])
 			$feedback .= "</tr>";
 		}
 		$feedback .= '</table>';
-
+	}
+	/*
 	}else{
 		$feedback = 'Inbox could not be loaded.';
-	}
+	}*/
 
 }else
 	header('Location: login.php');
