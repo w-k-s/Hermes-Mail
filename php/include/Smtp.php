@@ -35,9 +35,8 @@ class Smtp{
 		$this->MailPort = $MailPort;
 
 		if(!$this->Connect($this->MailServer,$this->MailPort) 
-			|| !$this->Helo())
+			&& !$this->Helo())
 		{
-
 			throw new Exception('Failure to connect to server');
 		}
 	}
@@ -68,17 +67,15 @@ class Smtp{
 				  'Code' => $this->ResponseCode($SmtpResponse),
 				  'Messafe' => $this->ResponseMessage($SmtpResponse));
 		}
-
-		return $this->Connected;
 	}
 
 	private function Helo()
 	{
-
 		@fputs($this->SmtpConnection,"HELO $LocalHost\r\n");
 		$SmtpResponse = @fgets($this->SmtpConnection,self::ResponseSize);
 
 		$this->Log['Helo'] = $SmtpResponse;
+
 
 		if($this->ResponseCode($SmtpResponse)=="250")
 			return true;
@@ -105,7 +102,7 @@ class Smtp{
 		if($this->Authenticated)
 		{
 			$this->Error = 
-				array('Error'=>'You must disconnect before trying to login again.');
+				array('Error'=>'Already logged in. Disconnect before retrying to login.');
 			return false;
 		}
 

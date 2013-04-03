@@ -30,6 +30,15 @@ class Imap{
 	const FLAG_DELETED = "\\Deleted";
 	const FLAG_SEEN = "\\Seen";
 
+	const FIELD_NUMBER = 'number';
+	const FIELD_TO = 'to';
+	const FIELD_FROM = 'from';
+	const FIELD_SUBJECT = 'subject';
+	const FIELD_DATE = 'date';
+	const FIELD_FLAG = 'flags';
+
+	const MAILBOX_INBOX = 'INBOX';
+
 	//------------- PRIVATE VARS ------------//
 	private $_connection = NULL;
 	private $_number = 0;
@@ -42,15 +51,20 @@ class Imap{
 
 	public $error = array();
 
+	function __construct($imap_server, $imap_port)
+	{
+		$this->connect($imap_server,$imap_port);
+	}
+
 	function __destruct()
 	{
 		if($this->_connected)
 			$this->logout();
 	}
 
-	function connect($imap_server, $imap_port)
+	private function connect($imap_server, $imap_port)
 	{
-		if(!$this->_connected)
+		if($this->_connected == false)
 		{
 			if($imap_server == NULL) 	$imap_server = self::LOCAL_HOST;
 			if($imap_port == NULL)		$imap_port = 993;
@@ -58,23 +72,17 @@ class Imap{
 			$this->_connection = fsockopen($imap_server,$imap_port);
 		
 			if(empty($this->_connection))
-				$this->error = array('error' => 'Connection to server could not be established');
-				
-			
+			{
+				throw new Exception('Connection to server could not be established');
+			}
 			else $this->_connected = true;		
+
 		}
-		
 		return $this->_connected;
 	}
 
 	function login($username, $password)
 	{
-		if(!$this->_connected)
-		{
-			$this->error = array('error' => 'Not connected to the server.');
-			return false;
-		}
-
 		if(!$this->_authenticated)
 		{
 			$instruction = $this->get_instruction_num();
@@ -131,11 +139,11 @@ class Imap{
 				preg_match('/From: (.+?@.+)/', $response['response'],$from);
 				preg_match('/Subject: (.*)/', $response['response'],$subject);
 				preg_match('/Date: (.*)/', $response['response'],$date);
-				return array('number'=>$message_num,
-					'from'=>$from[1],
-					'to'=>$to[1],
-					'subject'=>$subject[1],
-					'date'=>$date[1]);
+				return array(self::FIELD_NUMBER =>$message_num,
+					self::FIELD_FROM=>$from[1],
+					self::FIELD_TO=>$to[1],
+					self::FIELD_SUBJECT=>$subject[1],
+					self::FIELD_DATE=>$date[1]);
 
 			case self::NO:
 				$this->error = array('error'=>'This folder does not exist.');
@@ -158,6 +166,9 @@ class Imap{
 		if(!($num_msgs = $this->get_num_messages($mailbox)))
 			return false;
 
+		if($from == "*")
+			$from = $num_msgs;
+
 		//checks messages in range
 		if($from < 0 || $to < 0 || $from > $num_msgs || $to > $num_msgs)
 		{
@@ -168,9 +179,9 @@ class Imap{
 		$instruction = $this->get_instruction_num();
 		$mailbox = strtoupper($mailbox);
 
-		fputs($this->_connection,"$instruction FETCH $from:$to (body[header.fields (from to subject date)])".self::CRLF);
+		fputs($this->_connection,"$instruction FETCH $from:$to (body[header.fields (from to subject date)] flags)".self::CRLF);
 		$response = $this->get_response($instruction);	
-	
+
 		switch ($response['code']) {
 			case self::OK:
 				
@@ -182,15 +193,19 @@ class Imap{
 						continue;
 					//get the id, date, from, to, subject
 					preg_match('/([0-9]*?) FETCH /i', $header,$message_num);
+					preg_match('/FLAGS \((.*?)\)/i',$header,$flags);
 					preg_match('/To: (.+?@.+)/', $header,$to);
 					preg_match('/From: (.+?@.+)/', $header,$from);
 					preg_match('/Subject: (.*)/', $header,$subject);
 					preg_match('/Date: (.*)/', $header,$date);
-					$mail = array('number'=>$message_num[1],
-					'from'=>$from[1],
-					'to'=>$to[1],
-					'subject'=>$subject[1],
-					'date'=>$date[1]);
+				
+				
+					$mail = array(self::FIELD_NUMBER=>$message_num[1],
+					self::FIELD_FLAG=> $flags[1],
+					self::FIELD_FROM=>$from[1],
+					self::FIELD_TO=>$to[1],
+					self::FIELD_SUBJECT=>$subject[1],
+					self::FIELD_DATE=>$date[1]);
 					array_push($headers_list, $mail);
 				}
 
@@ -396,7 +411,11 @@ class Imap{
 
 	private function get_response($aInstructionNumber)
 	{
+
 		$end_of_response = false;
+
+		if(!is_resource($this->_connection))
+			die('shit');
 
 		while (!$end_of_response)
 		{
@@ -452,4 +471,6 @@ class Imap{
 	}
 
 }
+//$imap = new Imap("ssl://imap.gmail.com",993);
+//echo $imap->login("maryam.kawther@gmail.com","Silmarilis");
 ?>

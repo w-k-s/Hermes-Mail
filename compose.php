@@ -1,11 +1,13 @@
 <?php
+
+
 require 'php/include/Smtp.php';
 session_start();
 ob_start();
 
 if(!isset($_SESSION['username']) ||
 	!isset($_SESSION['password']))
-		header('Location: http:///localhost/Network Applications/login.php');
+		header('Location: login.php');
 
 if(isset($_POST['to']) 
 	&& isset($_POST['subject']) 
@@ -22,8 +24,8 @@ if(isset($_POST['to'])
 		$smtp = new Smtp("ssl://smtp.gmail.com","465");
 		if(!$smtp->Login($username,$password))
 		{
-			//ENCRYPT
-			header('Location: login.php?status=timeout');
+			header('Location: login.php');
+			die();
 		}
 		
 		if(!$smtp->SendMail($username,$to,$subject,$body))
@@ -38,6 +40,7 @@ if(isset($_POST['to'])
 	}
 
 }
+
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -65,10 +68,10 @@ if(isset($_POST['to'])
 		</div>
 		<div id="navigation">
 			<ul id="nav">
-				<li><a href="inbox.html">Inbox</a></li>
-				<li><a href="inbox.html">Sent Mail</a></li>
-				<li><a href="inbox.html">Drafts</a></li>
-				<li><a href="inbox.html">Deleted Mail</a></li>
+				<li><a href="inbox.php">Inbox</a></li>
+				<li><a href="inbox.php">Sent Mail</a></li>
+				<li><a href="inbox.php">Drafts</a></li>
+				<li><a href="inbox.php">Deleted Mail</a></li>
 			</ul>
 		</div>
 		<div id="content">

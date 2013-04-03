@@ -4,17 +4,8 @@
 */
 
 $(document).ready(function () {
-    $('table tr').click(function () {
-        if (link) {
-            window.location = "message.html";
-            return false;
-        }
+    $('tr').click(function(){
+        number = $(this).attr('number');
+        window.location = 'message.php?n='+number;
     });
-
-    $('#delete').click(function () {
-        $('#table_inbox tr').each(function () {
-            if ($(this).find('input[type=checkbox]').is(':checked')) $(this).remove();
-        });
-    });
-
 });

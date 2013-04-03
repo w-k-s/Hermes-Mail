@@ -1,8 +1,9 @@
 <?php
+
 include 'php/include/Imap.php'; 
 
 session_start();
-
+ob_start();
 
 if(isset($_SESSION['username']) &&
 	isset($_SESSION['password']))
@@ -17,34 +18,22 @@ if(isset($_POST['username']) && isset($_POST['password']))
 
 	unset($feedback);
 
-	$imap = new Imap();
-
-	if(!$imap->connect('ssl://imap.gmail.com',993))
-		$feedback = '<span style="color: #b22222">'.$imap->error().'</span>';
-
-	if(!$imap->login($username,$password))
-		$feedback = '<span style="color: #b22222">'.$imap->error().'</span>';
-	
-	else
-	{
-		$_SESSION['imap'] = $imap;
-		//ENCRYPT
-		$_SESSION['username'] = $username;
-		$_SESSION['password'] = $password;
-		header('Location: http://localhost/Network Applications/inbox.php');
-	}	
-}
-
-if (isset($_GET['status'])) {
-	switch ($_GET['status']) {
-		case "timeout":
-			$feedback ='<span style="color: #b22222"> Please Sign in</span>';
-			break;
+	try{
+		$imap = new Imap('ssl://imap.gmail.com',993);
 		
-		default:
-			# code...
-			break;
-	}
+		if(!$imap->login($username,$password))
+		{
+			$feedback = '<span style="color: #b22222">'.$imap->error().'</span>';
+		}else{
+			//ENCRYPT
+			$_SESSION['username'] = $username;
+			$_SESSION['password'] = $password;
+			header('Location: inbox.php');
+		}
+	}catch(Exception $e)
+	{
+		$feedback = '<span style="color: #b22222">'.$e->getMessage().'</span>';	
+	}	
 }
 
 ?>
@@ -70,7 +59,7 @@ if (isset($_GET['status'])) {
 					</div>
 					<form method="post" action="login.php" onsubmit="return doValidation();">
 						<p><strong>E-MAIL:</strong></p>
-						<p><input type="text" id="txt_email" class="field" name="username" size="30" value="@gmail.com"/></p>
+						<p><input type="text" id="txt_email" class="field" name="username" size="30" <?php if(isset($username)) echo 'value="'.$username.'"'; else echo 'value="@gmail.com"'?>/></p>
 						<p><strong>PASSWORD:</strong></p>
 						<p><input type="password" id="txt_password" class="field" name="password" size="30"/></p>
 						<p id='p_message' class='message'>

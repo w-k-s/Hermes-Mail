@@ -9,6 +9,9 @@
 	overflow:scroll;
 	overflow-x: hidden;
 }
+#table_inbox{
+	width: 100%;
+}
 
 #table_inbox tr {
 	border: 1px gray solid; /*remove perhaps*/
@@ -19,10 +22,18 @@
 	padding-left:15px;
 }
 
+#table_inbox tr:nth-child(odd) {
+	background: white;
+}
+
 #table_inbox tr:nth-child(even) {
 	background-color: #F0F8FF;
 }
 
 tr .td_subject{
 	width:50%;
+}
+
+tr a{
+	text-decoration: none;
 }
