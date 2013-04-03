@@ -33,6 +33,7 @@ if(isset($_SESSION['username'])
 		$new_msgs = array_reverse($new_msgs);
 		$inbox = array_merge($new_msgs,$inbox);
 		$_SESSION['mailbox'] = $inbox;
+		$_SESSION['num_msgs'] = $num_msgs;
 	}
 
 	if(is_array($inbox))

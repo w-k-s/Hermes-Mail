@@ -6,7 +6,8 @@ session_start();
 ob_start();
 
 if(!isset($_SESSION['username'])
-	&& !isset($_SESSION['password']))
+	&& !isset($_SESSION['password'])
+	&& !isset($_SESSION['mailbox']))
 {
 	header('Location: login.php');
 	die();
@@ -23,6 +24,8 @@ $password = $_SESSION['password'];
 $imap_server = "ssl://imap.gmail.com";
 $imap_port = 993;
 $msg_num = $_GET['n'];
+$mailbox = $_SESSION['mailbox'];
+$num_msgs = $_SESSION['num_msgs'];
 
 $imap = new Imap($imap_server,$imap_port);
 if(!$imap->login($username,$password))
@@ -31,19 +34,28 @@ if(!$imap->login($username,$password))
 	die();
 }
 
-$headers = $imap->get_header($imap::MAILBOX_INBOX,$msg_num);
 $body = $imap->get_message_body($imap::MAILBOX_INBOX,$msg_num);
 
-if(!is_array($headers) || empty($body))
+if(/*!is_array($headers) ||*/ empty($body))
 {
 	header('Location inbox.php');
 	die();
 }
 
-$feedback['from'] = $headers[$imap::FIELD_FROM];
-$feedback['to'] = $headers[$imap::FIELD_TO];
-$feedback['subject'] = $headers[$imap::FIELD_SUBJECT];
-$feedback['date'] = $headers[$imap::FIELD_DATE];
+//$headers = $imap->get_header($imap::MAILBOX_INBOX,$msg_num);
+//for($i = 0;$i < count($mailbox);$i++)
+//{
+//	if($mailbox[$i][$imap::FIELD_NUMBER]==$msg_num)
+//	{
+$i = $num_msgs - $msg_num;
+$feedback['from'] = $mailbox[$i][$imap::FIELD_FROM];
+$feedback['to'] = $mailbox[$i][$imap::FIELD_TO];
+$feedback['subject'] = $mailbox[$i][$imap::FIELD_SUBJECT];
+$feedback['date'] = $mailbox[$i][$imap::FIELD_DATE];
+		//break;
+//	}
+//}
+
 $feedback['body'] = $body;
 
 ?>
