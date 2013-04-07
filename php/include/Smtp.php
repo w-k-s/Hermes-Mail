@@ -203,6 +203,7 @@ class Smtp{
 
 		$header = $this->CreateHeader($from,$to,$subject);
 
+
 		@fputs($this->SmtpConnection,"To: $to\r\nFrom: $from\r\nSubject: $subject\r\n$header\r\n\r\n$message\r\n.\r\n");
 		$SmtpResponse = @fgets($this->SmtpConnection,self::ResponseSize);
 		$this->Log['Message'] = $SmtpResponse;

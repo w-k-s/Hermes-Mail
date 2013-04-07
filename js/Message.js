@@ -1,9 +1,19 @@
-var deleteButton = document.getElementById('btn_delete');
+var replyButton = document.getElementById('btn_reply');
+var from = document.getElementById('td_from');
+var subject = document.getElementById('td_subject');
+var body = document.getElementById('messagePanel');
 
-function deleteMail(){
-	if(confirm('Are you sure you want to delete this message?'))
-		alert('Message deleted!');
+function replyMail(){
+
+
+	
+	mail_contents = new Array();
+	mail_contents['reply_to'] = from.innerHTML;
+	mail_contents['reply_subject'] = subject.innerHTML;
+	mail_contents['reply_body'] = body.innerHTML;
+	
+	post("compose.php",mail_contents);
+	
 }
 
-
-deleteButton.addEventListener('click',deleteMail,false);
+replyButton.addEventListener('click',replyMail,false);

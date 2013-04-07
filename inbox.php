@@ -25,6 +25,7 @@ if(isset($_SESSION['username'])
 	}
 
 	$num_msgs = $imap->get_num_messages($imap::MAILBOX_INBOX);
+
 	if($num_msgs > $num_cached_msgs )
 	{
 		$num_new_msgs = $num_msgs - $num_cached_msgs;
@@ -34,6 +35,18 @@ if(isset($_SESSION['username'])
 		$inbox = array_merge($new_msgs,$inbox);
 		$_SESSION['mailbox'] = $inbox;
 		$_SESSION['num_msgs'] = $num_msgs;
+	}
+	if($num_msgs < $num_cached_msgs)
+	{
+		$total_num_mails = $imap->get_num_messages($imap::MAILBOX_INBOX);
+			$load_size = $total_num_mails > 200 ? $total_num_mails - 200: 1;
+			$inbox = $imap->get_headers($imap::MAILBOX_INBOX,"*",$load_size);
+
+			$inbox = array_reverse($inbox);
+
+			//ENCRYPT
+			$_SESSION['num_msgs'] = $total_num_mails;
+			$_SESSION['mailbox'] = $inbox;
 	}
 
 	if(is_array($inbox))
@@ -46,38 +59,37 @@ if(isset($_SESSION['username'])
 
 			$number = $inbox[$i][$imap::FIELD_NUMBER];
 			$from = $inbox[$i][$imap::FIELD_FROM];
+			$from = substr($from, 0,strpos($from, '&lt;'));
 			$subject = $inbox[$i][$imap::FIELD_SUBJECT];
 			$date = $inbox[$i][$imap::FIELD_DATE];
 			$flags = $inbox[$i][$imap::FIELD_FLAG];
 			//$new = strpos($flags, $imap::FLAG_)
 
 			$feedback .= "<tr number='$number'>";
-			$feedback .= "<td><input type='checkbox'/></td>";
-			$feedback .= "<td>$from</td>";
-			$feedback .= "<td class='td_subject'>$subject</td>";
-			$feedback .= "<td>$date</td>";
+			$feedback .= "<td clickable='false'><input type='checkbox'/></td>";
+			$feedback .= "<td clickable='true'>$from</td>";
+			$feedback .= "<td class='td_subject' clickable='true'>$subject</td>";
+			$feedback .= "<td clickable='true'>$date</td>";
 			$feedback .= "</tr>";
 		}
 		$feedback .= '</table>';
 	}
-	/*
-	}else{
-		$feedback = 'Inbox could not be loaded.';
-	}*/
 
 }else
-	header('Location: login.php');
+	die('There was a problem signing you in.<br/>Please <a href="php/logout.php">logout</a> and try again.<br/> Sorry :(');
 
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 	<head>
 		<title>Mail</title>
-		<link rel="shortcut icon" type="image/x-icon" href="res/favicon.ico"></link>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
 		<link rel="stylesheet" href="css/Core.css" type="text/css"></link>
 		<link rel="stylesheet" href="css/Frame.css" type="text/css"></link>
 		<link rel="stylesheet" href="css/Inbox.css" type="text/css"></link>
+		<script type='text/javascript'>
+			<?php if(isset($_GET['d'])){ if($_GET['d']==0) echo 'alert("Messages could not be deleted at this time.");';} ?>
+		</script>
 	</head>
 	<body>
 		<div id="header">
@@ -105,26 +117,12 @@ if(isset($_SESSION['username'])
 		<div id="content">
 			<div id="buttonPanel">
 				<input type="button" class="button" value="Compose" onclick="location.href='compose.php'"/>
-				<input type="button" class="button" id="delete" value="Delete" />
+				<input type="button" class="button" id="btn_delete" value="Delete" />
 				<input type="button" class="button" value="Refresh" onclick="location.reload()"/>
 				<input type="text" id="searchfield" value="Search"/>
 			</div>
 			<div id="emailPanel">
 				<?php if(isset($feedback)) echo $feedback;?>
-				<!--<table id="table_inbox">
-						<tr>
-							<td>type="checkbox" /></td>
-							<td>Sender McSender</td>
-							<td class="td_subject"><a href="message.php?num=1">I've sent you this email</a></td>
-							<td>26 Feb 2013 20:03</td>
-						</tr>
-						<tr>
-							<td><input onmouseover="link = false;" type="checkbox" /></td>
-							<td>Sender McSender</td>
-							<td class="td_subject">I've sent you this email</td>
-							<td>26 Feb 2013 20:03</td>
-						</tr>
-				</table>-->
 			</div>
 			<div id="footer">
 			 <p>
@@ -135,6 +133,7 @@ if(isset($_SESSION['username'])
 			</div>
 		</div>
 		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+		<script type="text/javascript" src="js/Tools.js"></script>
 		<script type="text/javascript" src="js/Inbox.js"></script>
 		<script type='text/javascript' src='js/Search.js'></script>
 	</body>

@@ -7,7 +7,7 @@ ob_start();
 
 if(isset($_SESSION['username']) &&
 	isset($_SESSION['password']))
-		header('Location: inbox.php');
+		@header('Location: inbox.php');
 
 if(isset($_POST['username']) && isset($_POST['password']))
 {
@@ -26,17 +26,17 @@ if(isset($_POST['username']) && isset($_POST['password']))
 			$feedback = '<span style="color: #b22222">'.$imap->error().'</span>';
 		}else{
 			
-			$num_mails = $imap->get_num_messages($imap::MAILBOX_INBOX);
-			$inbox = $imap->get_headers($imap::MAILBOX_INBOX,"*",1);
-			if(!$num_mails || !is_array($inbox))
-			{
-				throw new Exception('Couldn\'t load inbox.');
-			}
+			$total_num_mails = $imap->get_num_messages($imap::MAILBOX_INBOX);
+
+
+			$load_size = $total_num_mails > 200 ? $total_num_mails - 200: 1;
+
+			$inbox = $imap->get_headers($imap::MAILBOX_INBOX,"*",$load_size);
 
 			$inbox = array_reverse($inbox);
 
 			//ENCRYPT
-			$_SESSION['num_msgs'] = $num_mails;
+			$_SESSION['num_msgs'] = $total_num_mails;
 			$_SESSION['mailbox'] = $inbox;
 			$_SESSION['username'] = $username;
 			$_SESSION['password'] = $password;
@@ -54,7 +54,6 @@ if(isset($_POST['username']) && isset($_POST['password']))
 	<head>
 		<title>Mail</title>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
-		<link rel="shortcut icon" type="image/x-icon" href="res/favicon.ico"></link>
 		<link rel="stylesheet" href="css/Core.css" type="text/css"></link>
 		<link rel="stylesheet" href="css/Login.css" type="text/css"></link>
 		

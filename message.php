@@ -5,6 +5,7 @@ require 'php/include/Imap.php';
 session_start();
 ob_start();
 
+
 if(!isset($_SESSION['username'])
 	&& !isset($_SESSION['password'])
 	&& !isset($_SESSION['mailbox']))
@@ -64,7 +65,6 @@ $feedback['body'] = $body;
 	<head>
 		<title>Mail</title>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
-		<link rel="shortcut icon" type="image/x-icon" href="res/favicon.ico"></link>
 		<link rel="stylesheet" href="css/Core.css" type="text/css"></link>
 		<link rel="stylesheet" href="css/Frame.css" type="text/css"></link>
 		<link rel="stylesheet" href="css/Message.css" type="text/css"></link>
@@ -94,24 +94,21 @@ $feedback['body'] = $body;
 		</div>
 		<div id="content">
 			<div id="buttonPanel">
-				<input type="button" class="button" value="Reply" id="btn_reply" onclick="location.href='compose.php'"/>
-				<input type="button" class="button" value="Reply All" id="btn_replyAll" onclick="location.href='compose.php'"/>
-				<input type="button" class="button" value="Forward" id="btn_forward" onclick="location.href='compose.php'"/>
-				<input type="button" class="button" value="Delete" id="btn_delete"/>
+				<input type="button" class="button" value="Reply" id="btn_reply"/>
 			</div>
 			<div id="infoPanel">
 				<table>
 					<tr>
 						<td><strong>From:</strong></td>
-						<td><?php if(isset($feedback['from'])) echo $feedback['from']?></td>
+						<td id='td_from'><?php if(isset($feedback['from'])) echo $feedback['from']?></td>
 					</tr>
 					<tr>
 						<td><strong>Subject:</strong></td>
-						<td><?php if(isset($feedback['subject'])) echo $feedback['subject']?></td>
+						<td id='td_subject'><?php if(isset($feedback['subject'])) echo $feedback['subject']?></td>
 					</tr>
 					<tr>
 						<td><strong>Date:</strong></td>
-						<td><?php if(isset($feedback['date'])) echo $feedback['date']?></td>
+						<td ><?php if(isset($feedback['date'])) echo $feedback['date']?></td>
 					</tr>
 					<tr>
 						<td><strong>To:</strong></td>
@@ -132,6 +129,7 @@ $feedback['body'] = $body;
 				</p>
 			</div>
 		</div>
+		<script type="text/javascript" src="js/Tools.js"></script>
 		<script type="text/javascript" src="js/Message.js"></script>
 	</body>
 </html>

@@ -38,7 +38,15 @@ if(isset($_POST['to'])
 	}catch(Exception $e){
 		$status = $e->getMessage();
 	}
+}
 
+if(isset($_POST['reply_to'])
+	&& isset($_POST['reply_subject'])
+	&& isset($_POST['reply_body']))
+{
+	$to = html_entity_decode($_POST['reply_to']);
+	$subject = htmlentities($_POST['reply_subject']);
+	$body = htmlentities($_POST['reply_body']);
 }
 
 ?>
@@ -83,7 +91,7 @@ if(isset($_POST['to'])
 				<table>
 					<tr>
 						<td><strong>To:</strong></td>
-						<td><input type="text" id="txt_to" class="composefield" <?php if(isset($to)) echo 'value='.$to.''?> /></td>
+						<td><input type="text" id="txt_to" class="composefield" <?php if(isset($to)) echo 'value="'.$to.'"'?> /></td>
 					</tr>
 					<!--<tr>
 						<td><strong>Cc:</strong></td>
@@ -95,7 +103,7 @@ if(isset($_POST['to'])
 					</tr>-->
 					<tr>
 						<td><strong>Subject:</strong></td>
-						<td><input type="text" id="txt_subject" class="composefield" <?php if(isset($subject)) echo 'value='.$subject.'' ?> /></td>
+						<td><input type="text" id="txt_subject" class="composefield" <?php if(isset($subject)) echo 'value="'.$subject.'"' ?> /></td>
 					</tr>
 				</table>
 			</div>
@@ -112,6 +120,7 @@ if(isset($_POST['to'])
 				</p>
 			</div>
 		</div>
+		<script type="text/javascript" src="js/Tools.js"></script>
 		<script type="text/javascript" src="js/Validate.js"></script>
 		<script type="text/javascript" src="js/Compose.js"></script>
 		<?php if(isset($status)) echo '<script type="text/javascript">alert("'.$status.'");</script>'?>

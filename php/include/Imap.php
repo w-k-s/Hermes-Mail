@@ -134,14 +134,13 @@ class Imap{
 		switch ($response['code']) 
 		{
 			case self::OK:
-				
 				preg_match('/To: (.+?@.+)/', $response['response'],$to);
 				preg_match('/From: (.+?@.+)/', $response['response'],$from);
 				preg_match('/Subject: (.*)/', $response['response'],$subject);
 				preg_match('/Date: (.*)/', $response['response'],$date);
 				return array(self::FIELD_NUMBER =>$message_num,
-					self::FIELD_FROM=>$from[1],
-					self::FIELD_TO=>$to[1],
+					self::FIELD_FROM=>($this->clean($from[1])),
+					self::FIELD_TO=>($this->clean($to[1])),
 					self::FIELD_SUBJECT=>$subject[1],
 					self::FIELD_DATE=>$date[1]);
 
@@ -184,13 +183,17 @@ class Imap{
 
 		switch ($response['code']) {
 			case self::OK:
-				
 				$headers = explode('*',$response['response']);
 				$headers_list = array();
 				foreach ($headers as $header) {
 					//the first header is blank
+					echo 'header: '.$header.'<br/>';
+
 					if($header == "")
 						continue;
+
+
+
 					//get the id, date, from, to, subject
 					preg_match('/([0-9]*?) FETCH /i', $header,$message_num);
 					preg_match('/FLAGS \((.*?)\)/i',$header,$flags);
@@ -202,8 +205,8 @@ class Imap{
 				
 					$mail = array(self::FIELD_NUMBER=>$message_num[1],
 					self::FIELD_FLAG=> $flags[1],
-					self::FIELD_FROM=>$from[1],
-					self::FIELD_TO=>$to[1],
+					self::FIELD_FROM=>($this->clean($from[1])),
+					self::FIELD_TO=>($this->clean($to[1])),
 					self::FIELD_SUBJECT=>$subject[1],
 					self::FIELD_DATE=>$date[1]);
 					array_push($headers_list, $mail);
@@ -290,6 +293,11 @@ class Imap{
 				$this->error = array('error'=>$response['response']);
 				return false;
 		}
+	}
+
+	function delete_mail($mailbox,$message_num)
+	{
+		$this->add_flag($mailbox,$message_num,self::FLAG_DELETED);
 	}
 
 	function get_flags($mailbox)
@@ -415,7 +423,7 @@ class Imap{
 		$end_of_response = false;
 
 		if(!is_resource($this->_connection))
-			die('shit');
+			throw new Exception('IMAP socket connection terminated');
 
 		while (!$end_of_response)
 		{
@@ -470,7 +478,18 @@ class Imap{
 		}
 	}
 
+
+	private function clean($raw)
+	{
+
+		$from = array('<','>','"',"'");
+		$to = array('&lt;','&gt','',"");
+		$clean =  str_replace($from, $to, $raw);
+
+		return $clean;
+	}
+
+
 }
-//$imap = new Imap("ssl://imap.gmail.com",993);
-//echo $imap->login("maryam.kawther@gmail.com","Silmarilis");
+
 ?>
