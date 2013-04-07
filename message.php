@@ -37,25 +37,12 @@ if(!$imap->login($username,$password))
 
 $body = $imap->get_message_body($imap::MAILBOX_INBOX,$msg_num);
 
-if(/*!is_array($headers) ||*/ empty($body))
-{
-	header('Location inbox.php');
-	die();
-}
-
-//$headers = $imap->get_header($imap::MAILBOX_INBOX,$msg_num);
-//for($i = 0;$i < count($mailbox);$i++)
-//{
-//	if($mailbox[$i][$imap::FIELD_NUMBER]==$msg_num)
-//	{
 $i = $num_msgs - $msg_num;
 $feedback['from'] = $mailbox[$i][$imap::FIELD_FROM];
 $feedback['to'] = $mailbox[$i][$imap::FIELD_TO];
 $feedback['subject'] = $mailbox[$i][$imap::FIELD_SUBJECT];
 $feedback['date'] = $mailbox[$i][$imap::FIELD_DATE];
-		//break;
-//	}
-//}
+
 
 $feedback['body'] = $body;
 
