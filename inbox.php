@@ -12,7 +12,7 @@ $username = 'null';
 $feedback = 'Inbox could not be loaded';
 
 //-----------REDIRECTS---------------//
-$login_uri = 'login.php';
+$login_uri = 'index.php';
 
 //logged in and mailbox cached
 if(isset($_SESSION['username']) 

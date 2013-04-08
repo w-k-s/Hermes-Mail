@@ -5,7 +5,7 @@
 
 	//redirect to login.
 	ob_start();
-	header('Location: login.php');
+	header('Location: index.php');
 
 	//stop output buffering.
 	ob_end_clean();

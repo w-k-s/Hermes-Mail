@@ -14,7 +14,7 @@ $feedback = array();
 
 //-----------REDIRECTS-------------//
 $_inbox_uri = 'inbox.php';
-$_login_uri = 'login.php';
+$_login_uri = 'index.php';
 
 //if not logged in or mailbox not cached
 //redirect to login page.
@@ -48,7 +48,7 @@ $num_msgs = $_SESSION['num_msgs'];
 $imap = new Imap($imap_server,$imap_port);
 if(!$imap->login($username,$password))
 {
-	header('Location: login.php');
+	header('Location: '.$_login_uri);
 	die();
 }
 

@@ -13,7 +13,7 @@ $subject = '';
 $body = '';
 
 //-----------REDIRECTS-----------//
-$login_uri = 'login.php';
+$login_uri = 'index.php';
 
 //if not logged in, send back to login page/
 if(!isset($_SESSION['username']) ||
