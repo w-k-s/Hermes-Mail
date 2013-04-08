@@ -39,8 +39,12 @@ class Smtp{
 		$this->MailServer = $MailServer;
 		$this->MailPort = $MailPort;
 
-		if(!$this->Connect($this->MailServer,$this->MailPort) 
-			&& !$this->Helo())
+		if(!$this->Connect($this->MailServer,$this->MailPort))
+		{
+			throw new Exception('Failure to connect to server');
+		}
+
+		if(!$this->Helo())
 		{
 			throw new Exception('Failure to connect to server');
 		}
@@ -327,4 +331,5 @@ class Smtp{
 	}
 
 }
+
 ?>

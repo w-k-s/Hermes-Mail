@@ -33,7 +33,7 @@ if(isset($_SESSION['username']) && isset($_SESSION['password']) && isset($_POST[
 			foreach ($delete_list as $num)
 				$imap->delete_mail($imap::MAILBOX_INBOX,$num);
 			$imap->expunge();
-			header('Location: '.$_inbox_uri);
+			header('Location: '.$_inbox_uri.'?d=1');
 		}
 	}catch(Exception $e)
 	{

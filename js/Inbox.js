@@ -30,6 +30,12 @@ $(document).ready(function () {
     	deleteList = new Array();
     	deleteList['delete_list'] = numbers.join(',');
 
+        if(deleteList=="")
+        {
+            alert('You haven\'t selected any messages to delete.');
+            return;
+        }
+
     	post("delete.php",deleteList);
     });
 });

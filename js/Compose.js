@@ -40,6 +40,7 @@ function doValidation()
 		params["body"] = message;
 
 		post("compose.php",params);
+		
 	}
 }
 

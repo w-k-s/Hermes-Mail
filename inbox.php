@@ -10,6 +10,7 @@ $inbox_template_uri = 'html/inbox.html';
 //-----------TEMPLATE VARIABLES-------//
 $username = 'null';
 $feedback = 'Inbox could not be loaded';
+$dialog = '';
 
 //-----------REDIRECTS---------------//
 $login_uri = 'index.php';
@@ -108,15 +109,32 @@ if(isset($_SESSION['username'])
 		}
 		$feedback .= '</table>';
 	}
+
+	if(isset($_GET['d']))
+	{
+		$delete_status = $_GET['d'];
+		switch ($delete_status) {
+			case '0':
+				$dialog = 'alert("Messages could not be deleted.");';
+				break;
+			
+			case '1':
+				//dont show a dialog. That'd be annoying.
+				break;
+			default:
+				# code...
+				break;
+		}
+	}
 }
 else
-	//avoid circular loop by logging out the user.
+	//avoid circular loop by asking the user to log out.
 	die('You could not be signed in. Please <a href="logout.php">Log-out</a> and try again. Sorry :( ');
 
 //load inbox template
 $inbox_template = file_get_contents($inbox_template_uri);
-$from = array('{{@username}}','{{@inbox}}');
-$to = array($username,$feedback);
+$from = array('{{@username}}','{{@inbox}}','{{@dialog}}');
+$to = array($username,$feedback,$dialog);
 
 //insert template variables into template and return.
 echo str_replace($from, $to, $inbox_template);

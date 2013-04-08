@@ -11,6 +11,7 @@ $username = '';
 $to = '';
 $subject = '';
 $body = '';
+$dialog = '';
 
 //-----------REDIRECTS-----------//
 $login_uri = 'index.php';
@@ -37,15 +38,12 @@ if(isset($_POST['to'])
 	$to = $_POST['to'];
 	$subject = $_POST['subject'];
 	$body = $_POST['body'];
-
 	//connect with smtp server.
 	try{
 		$smtp = new Smtp("ssl://smtp.gmail.com","465");
 		if(!$smtp->Login($username,$password))
 		{
-
-			header('Location: '.$login_uri);
-			die();
+			$status = 'Message could not be sent because you are not signed-in';
 		}
 		
 		//send mail
@@ -53,12 +51,15 @@ if(isset($_POST['to'])
 		{
 			$error = $smtp->Error();
 			$status = $error['Error'];
+			die();
 		}else
 			$status = 'Message sent!';
 
 	}catch(Exception $e){
 		$status = $e->getMessage();
 	}
+
+	$dialog = 'alert("'.$status.'");';
 }
 
 //if mail is being replied to, 
@@ -74,8 +75,8 @@ if(isset($_POST['reply_to'])
 
 //load template
 $compose_template = file_get_contents($compose_template_uri);
-$from = array('{{@username}}','{{@to}}','{{@subject}}','{{@body}}');
-$to = array($username,$to,$subject,$body);
+$from = array('{{@username}}','{{@to}}','{{@subject}}','{{@body}}','{{@dialog}}');
+$to = array($username,$to,$subject,$body,$dialog);
 
 //insert template variables into template and return.
 echo str_replace($from, $to, $compose_template);
