@@ -1,15 +1,11 @@
 <?php
 
-/*
-* Name: IMAP PHP
-* Author: Waqqas Sheikh
-* Description: 
-* - read email:header/body
-* - delete email
-* Comments:
-* - There're a lot of repeated validation checks.
-* - I'm not sure using Regex to extract the content is the most efficient way. 
-* - what if preg_match returns 0 <- handle it!
+/*@
+* 
+*
+*@class: IMAP
+*@author: Waqqas Sheikh
+* I know I should have used enums for flags and fields.
 */
 
 class Imap{
@@ -51,17 +47,35 @@ class Imap{
 
 	public $error = array();
 
+	/**
+	*Connects to Imap server.
+	*@param string $imap_server ssl ip address of imap server e.g. imap.gmail.com
+	*@param integer $imap_port ssl port of imap server
+	*@throws exception 
+	*/
 	function __construct($imap_server, $imap_port)
 	{
 		$this->connect($imap_server,$imap_port);
 	}
 
+	/**
+	*
+	*Destructor: quits imap session and closes connection
+	*
+	*/
 	function __destruct()
 	{
 		if($this->_connected)
 			$this->logout();
 	}
 
+	/**
+	*connects to imap server
+	*@param string $imap_server ssl ip address of imap server. 
+	*@param integer $imap_port ssl port of imap server
+	*@throws exceptions
+	*@return boolean
+	*/
 	private function connect($imap_server, $imap_port)
 	{
 		if($this->_connected == false)
@@ -71,7 +85,8 @@ class Imap{
 
 			$this->_connection = fsockopen($imap_server,$imap_port);
 		
-			if(empty($this->_connection))
+			//check that connection was established.
+			if(!is_resource($this->_connection))
 			{
 				throw new Exception('Connection to server could not be established');
 			}
@@ -81,6 +96,12 @@ class Imap{
 		return $this->_connected;
 	}
 
+	/**
+	*authenticates user
+	*@param string $username full mail username (unencrypted) e.g. bob@gmail.com
+	*@param integer $password unencrypted mal password
+	*@return boolean
+	*/
 	function login($username, $password)
 	{
 		if(!$this->_authenticated)
@@ -110,6 +131,13 @@ class Imap{
 		return $this->_authenticated;
 	}
 
+	/**
+	*returns the header (from, to, subject, date) of a message
+	*
+	*@param string $mailbox name of mailbox, use $imap::MAILBOX_INBOX
+	*@param integer $message_num number of message to be deleted (not unique id)
+	*@return array($imap::FIELD_FROM,$imap::FIELD_TO,$imap::FIELD_SUBJECT,$imap::FIELD_DATE) or false.
+	*/
 	function get_header($mailbox, $message_num)
 	{
 		//select mailbox
@@ -134,6 +162,7 @@ class Imap{
 		switch ($response['code']) 
 		{
 			case self::OK:
+				//extract header data
 				preg_match('/To: (.+?@.+)/', $response['response'],$to);
 				preg_match('/From: (.+?@.+)/', $response['response'],$from);
 				preg_match('/Subject: (.*)/', $response['response'],$subject);
@@ -155,7 +184,14 @@ class Imap{
 		}
 	}
 
-
+	/**
+	*Returns headers (from, to, subject, date) of all mails between $from and $to
+	*
+	*@param string $mailbox name of mailbox, use $imap::MAILBOX_INBOX
+	*@param integer $from first mail number (use "*" to get all mails)
+	*@param integer $to last mail number
+	*@return array(array($imap::FIELD_FROM,$imap::FIELD_TO,$imap::FIELD_SUBJECT,$imap::FIELD_DATE)) or false.
+	*/
 	function get_headers($mailbox, $from, $to)
 	{
 		//select mailbox
@@ -175,23 +211,25 @@ class Imap{
 			return false;
 		}
 
+		//get instruction number
 		$instruction = $this->get_instruction_num();
 		$mailbox = strtoupper($mailbox);
 
+		//send command to server
 		fputs($this->_connection,"$instruction FETCH $from:$to (body[header.fields (from to subject date)] flags)".self::CRLF);
 		$response = $this->get_response($instruction);	
 
 		switch ($response['code']) {
 			case self::OK:
 				$headers = explode('*',$response['response']);
+
+				//store all headers in list.
 				$headers_list = array();
 				foreach ($headers as $header) {
-					//the first header is blank
 
+					//ignore blank headers
 					if($header == "")
 						continue;
-
-
 
 					//get the id, date, from, to, subject
 					preg_match('/([0-9]*?) FETCH /i', $header,$message_num);
@@ -201,13 +239,15 @@ class Imap{
 					preg_match('/Subject: (.*)/', $header,$subject);
 					preg_match('/Date: (.*)/', $header,$date);
 				
-				
+					//add details to header
 					$mail = array(self::FIELD_NUMBER=>$message_num[1],
 					self::FIELD_FLAG=> $flags[1],
 					self::FIELD_FROM=>($this->clean($from[1])),
 					self::FIELD_TO=>($this->clean($to[1])),
 					self::FIELD_SUBJECT=>$subject[1],
 					self::FIELD_DATE=>$date[1]);
+
+					//push header to header list.
 					array_push($headers_list, $mail);
 				}
 
@@ -222,6 +262,13 @@ class Imap{
 		}
 	}
 
+	/**
+	*Returns text of mail with given message number
+	*
+	*@param string $mailbox name of mailbox, use $imap::MAILBOX_INBOX
+	*@param integer $message_num message number
+	*@return string or false
+	*/
 	function get_message_body($mailbox, $message_num)
 	{
 		//select mailbox
@@ -258,6 +305,13 @@ class Imap{
 		}
 	}
 
+	/**
+	*Adds flag($imap::FLAG_DELETED,$imap::FLAG_SEEN etc) to a message
+	*@param string $mailbox name of mailbox, use $imap::MAILBOX_INBOX
+	*@param integer $message_num message number
+	*@param string $flag flag
+	*@return boolean
+	*/
 	function add_flag($mailbox, $message_num,$flag)
 	{
 		//select mailbox
@@ -284,7 +338,7 @@ class Imap{
 				return true;
 
 			case self::NO:
-				$this->error = array('error'=>'This flag does not exist. Valid flags are: '.print_r(get_flags()).'.');
+				$this->error = array('error'=>'This flag does not exist.');
 				return false;
 
 			case self::BAD:
@@ -294,11 +348,25 @@ class Imap{
 		}
 	}
 
+	/**
+	*deletes mail
+	*
+	*@param string $mailbox name of mailbox, use $imap::MAILBOX_INBOX
+	*@param integer $message_num mail number
+	*@return boolean
+	*
+	*/
 	function delete_mail($mailbox,$message_num)
 	{
 		$this->add_flag($mailbox,$message_num,self::FLAG_DELETED);
 	}
 
+	/*
+	*Returns available flags
+	*@param string $mailbox name of mailbox, use $imap::MAILBOX_INBOX
+	*@return array of flags or false
+	*
+	*
 	function get_flags($mailbox)
 	{
 		if(!$this->_connected)
@@ -335,8 +403,12 @@ class Imap{
 				return false;
 		}
 
-	}
+	}*/
 
+	/**
+	*Completely deletes mails
+	*@return boolean
+	*/
 	function expunge()
 	{
 		$instruction = $this->get_instruction_num();
@@ -357,6 +429,12 @@ class Imap{
 		}
 	}
 
+	/**
+	*retuns number of messages in mailbox
+	*@param string $mailbox name of mailbox, use $imap::MAILBOX_INBOX
+	*@return integer/boolean
+	*
+	*/
 	function get_num_messages($mailbox)
 	{
 
@@ -384,6 +462,11 @@ class Imap{
 		
 	}
 
+
+	/**
+	*logs out user and closes imap connection
+	*@return boolean
+	*/
 	function logout()
 	{
 		if(!$this->_connected)
@@ -411,11 +494,22 @@ class Imap{
 		}
 	}
 
+	/**
+	*returns last error message
+	*@return string
+	*
+	*/
 	function error()
 	{
 		return $this->error['error'];
 	}
 
+	/**
+	*returns response for request sent to imap socket
+	*@param $aInstructionNumber instruction number sent with request
+	*@return array('code','response')
+	*@throws Exception if connection has expired.
+	*/
 	private function get_response($aInstructionNumber)
 	{
 
@@ -437,6 +531,11 @@ class Imap{
 			'response'=>$response);
 	} 
 
+	/**
+	*retuns new instruction number
+	*@return string
+	*
+	*/
 	private function get_instruction_num()
 	{
 		$this->_number++;
@@ -444,6 +543,11 @@ class Imap{
 		return $this->_instruction_num;
 	}
 
+	/**
+	*selects mailbox
+	*@param string $mailbox name of mailbox, use $imap::MAILBOX_INBOX
+	*@return boolean
+	*/
 	private function select_mailbox($mailbox)
 	{
 		if(!$this->_connected)
@@ -478,13 +582,17 @@ class Imap{
 	}
 
 
+	/**
+	*decodes html tags (I tried using html_entity_decode but that didnt work for some reason)
+	*@param string $raw encoded html
+	*@return string decoded html
+	*
+	*/
 	private function clean($raw)
 	{
-
 		$from = array('<','>','"',"'");
 		$to = array('&lt;','&gt','',"");
 		$clean =  str_replace($from, $to, $raw);
-
 		return $clean;
 	}
 
