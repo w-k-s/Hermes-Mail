@@ -1,12 +1,19 @@
 var searchField = document.getElementById('searchfield');
+searchField.addEventListener("keypress",doSearch,false);
 
 function doSearch(event)
 {
-	if(window.event)
-		event = window.event;
-
-	if(event.keyCode == 13)
-		alert("searching for "+searchField.value);
+	//get search term
+	searchTerm = searchField.value.trim();
+	if(searchTerm != "")
+	{
+		//hide messages that dont contain search term
+		$('.message:not(:contains("'+searchTerm+'"))').hide();
+	}else
+	{
+		//show all messages
+		$('.message').show();
+	}
+	
 }
 
-searchField.addEventListener("keypress",doSearch,false);

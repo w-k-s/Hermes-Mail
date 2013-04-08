@@ -4,6 +4,10 @@
 */
 
 $(document).ready(function () {
+
+    //in the inbox table
+    //if the user clicks anywhere except on the checkbox, 
+    //load the message.
     $('td').click(function(){
         clickable = $(this).attr('clickable');
         if(clickable == 'true')
@@ -11,8 +15,12 @@ $(document).ready(function () {
         	number = $(this).parent().attr('number');
        		window.location = 'message.php?n='+number;
         }
-        
     });
+
+    //when the user marks a message for deletion
+    //push the number of message into array
+    //convert array to comma seperated string
+    //pass string to delete php
     $('#btn_delete').click(function(){
     	numbers = new Array();
     	$(':checked').each(function(){
@@ -22,6 +30,6 @@ $(document).ready(function () {
     	deleteList = new Array();
     	deleteList['delete_list'] = numbers.join(',');
 
-    	post("php/delete.php",deleteList);
+    	post("delete.php",deleteList);
     });
 });

@@ -187,7 +187,6 @@ class Imap{
 				$headers_list = array();
 				foreach ($headers as $header) {
 					//the first header is blank
-					echo 'header: '.$header.'<br/>';
 
 					if($header == "")
 						continue;

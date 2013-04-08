@@ -1,3 +1,5 @@
+
+//create invisible form and post data to page.
 function post(action, params)
 {
 	var form = document.createElement("form");

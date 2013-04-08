@@ -1,6 +1,8 @@
+//get buttons
 var sendButton = document.getElementById("btn_send");
 var cancelButton = document.getElementById("btn_cancel");
 
+//add event handlers to buttons
 sendButton.addEventListener("click",doValidation,false);
 cancelButton.addEventListener("click",doCancel,false);
 
@@ -11,12 +13,14 @@ function doValidation()
 	subject = document.getElementById("txt_subject").value;
 	message = document.getElementById("txt_message").value;
 
+	//receipant email must be provided
 	if(toFieldIsEmpty())
 	{
 		alert('You must provide a receipant email address');
 		return false;
 	}
 
+	//check email has valid format
 	if(!emailValid(to))
 	{
 		error = "Receipant email is not valid:\n";
@@ -27,6 +31,7 @@ function doValidation()
 		return false;
 	}
 
+	//give warning that subject is blank
 	if(!subjectAndBodyBlank())
 	{
 		params = new Array();
@@ -47,14 +52,13 @@ function toFieldIsEmpty()
 function subjectAndBodyBlank()
 {
 	subjectEmpty = (subject.trim() == "");
+	messageEmpty = (message == "");
 
-	//default text in editor is <br>
-	messageEmpty = (message == "<br>");
-
-
+	//if subject and message written, return false
 	if(!subjectEmpty && !messageEmpty)
 		return false;
 
+	//if subject and message not provided, confirm dialog
 	else
 	{
 		error = "Are you sure you want to send this email without ";
@@ -71,5 +75,5 @@ function subjectAndBodyBlank()
 function doCancel()
 {
 	if(confirm("Are you sure you want to cancel writing this message?"))
-		location.href='inbox.html';
+		location.href='inbox.php';
 }

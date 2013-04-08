@@ -1,57 +1,91 @@
 <?php
 
-require 'php/include/Imap.php';
+require 'include/Imap.php';
 
 session_start();
 
+//-------------TEMPLATES--------------//
+$inbox_template_uri = 'html/inbox.html';
 
+//-----------TEMPLATE VARIABLES-------//
+$username = 'null';
+$feedback = 'Inbox could not be loaded';
+
+//-----------REDIRECTS---------------//
+$login_uri = 'login.php';
+
+//logged in and mailbox cached
 if(isset($_SESSION['username']) 
 	&& isset($_SESSION['password'])
 	&& isset($_SESSION['num_msgs'])
 	&& isset($_SESSION['mailbox']))
 {
+	//get cached total number of messages in inbox.
 	$num_cached_msgs = $_SESSION['num_msgs'];
+	
+	//get cached inbox
 	$inbox = $_SESSION['mailbox'];
+	
 	$username = $_SESSION['username'];
 	$password = $_SESSION['password'];
 	$imap_server = "ssl://imap.gmail.com";
 	$imap_port = 993;
 	
+	//connect to imap server
 	$imap = new Imap($imap_server,$imap_port);
 	if(!$imap->login($username,$password))
 	{
-		header('Location: login.php');
+		header('Location: '.$login_uri);
 		die();
 	}
 
+	//get latest total number of messages in inbox
 	$num_msgs = $imap->get_num_messages($imap::MAILBOX_INBOX);
 
+	//if latest num of messages is greater than cached num of messages
+	//more mails have arrived
 	if($num_msgs > $num_cached_msgs )
 	{
+		//calculate number of new messages to load
 		$num_new_msgs = $num_msgs - $num_cached_msgs;
 
+		//load headers of new messages
 		$new_msgs = $imap->get_headers($imap::MAILBOX_INBOX,$num_msgs,($num_msgs - $num_new_msgs+1));
+		
+		//arrange new mails in chronoligically descending order
 		$new_msgs = array_reverse($new_msgs);
+
+		//combine with inbox
 		$inbox = array_merge($new_msgs,$inbox);
+		
+		//update cache
 		$_SESSION['mailbox'] = $inbox;
 		$_SESSION['num_msgs'] = $num_msgs;
 	}
+
+	//if latest num of messages less than cached number of messages
+	//user has deleted mails.
 	if($num_msgs < $num_cached_msgs)
 	{
+		//ge total number of mails
 		$total_num_mails = $imap->get_num_messages($imap::MAILBOX_INBOX);
+
+		//load no more than 200 headers
 			$load_size = $total_num_mails > 200 ? $total_num_mails - 200: 1;
 			$inbox = $imap->get_headers($imap::MAILBOX_INBOX,"*",$load_size);
 
+			//arrange from latest to oldest
 			$inbox = array_reverse($inbox);
 
-			//ENCRYPT
+			//update cache
 			$_SESSION['num_msgs'] = $total_num_mails;
 			$_SESSION['mailbox'] = $inbox;
 	}
 
+	//if inbox loaded
 	if(is_array($inbox))
 	{
-
+		//organise headers into inbox table elemnt
 		$feedback = "<table id='table_inbox'>";
 
 		for($i=0; $i<count($inbox); $i++)
@@ -65,7 +99,7 @@ if(isset($_SESSION['username'])
 			$flags = $inbox[$i][$imap::FIELD_FLAG];
 			//$new = strpos($flags, $imap::FLAG_)
 
-			$feedback .= "<tr number='$number'>";
+			$feedback .= "<tr class='message' number='$number'>";
 			$feedback .= "<td clickable='false'><input type='checkbox'/></td>";
 			$feedback .= "<td clickable='true'>$from</td>";
 			$feedback .= "<td class='td_subject' clickable='true'>$subject</td>";
@@ -74,67 +108,17 @@ if(isset($_SESSION['username'])
 		}
 		$feedback .= '</table>';
 	}
+}
+else
+	//avoid circular loop by logging out the user.
+	die('You could not be signed in. Please <a href="logout.php">Log-out</a> and try again. Sorry :( ');
 
-}else
-	die('There was a problem signing you in.<br/>Please <a href="php/logout.php">logout</a> and try again.<br/> Sorry :(');
+//load inbox template
+$inbox_template = file_get_contents($inbox_template_uri);
+$from = array('{{@username}}','{{@inbox}}');
+$to = array($username,$feedback);
+
+//insert template variables into template and return.
+echo str_replace($from, $to, $inbox_template);
 
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-	<head>
-		<title>Mail</title>
-		<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
-		<link rel="stylesheet" href="css/Core.css" type="text/css"></link>
-		<link rel="stylesheet" href="css/Frame.css" type="text/css"></link>
-		<link rel="stylesheet" href="css/Inbox.css" type="text/css"></link>
-		<script type='text/javascript'>
-			<?php if(isset($_GET['d'])){ if($_GET['d']==0) echo 'alert("Messages could not be deleted at this time.");';} ?>
-		</script>
-	</head>
-	<body>
-		<div id="header">
-			<div id="title">
-				<table>
-					<tr>
-						<td><img src="res/logo_white.png" alt="logo" width="40" height="40"/></td>
-						<td><h1>Hermes</h1></td>
-					</tr>
-				</table>
-			</div>
-			<div id="userPanel" >
-				<div><h3><?php if(isset($username)) echo $username ?></h3></div>
-				<div><a href="php/logout.php">Log-Out</a></div>
-			</div>
-		</div>
-		<div id="navigation">
-			<ul id="nav">
-				<li><a href="inbox.php" style="font-weight: bold;">Inbox</a></li>
-				<li><a href="inbox.php">Sent Mail</a></li>
-				<li><a href="inbox.php">Drafts</a></li>
-				<li><a href="inbox.php">Deleted Mail</a></li>
-			</ul>
-		</div>
-		<div id="content">
-			<div id="buttonPanel">
-				<input type="button" class="button" value="Compose" onclick="location.href='compose.php'"/>
-				<input type="button" class="button" id="btn_delete" value="Delete" />
-				<input type="button" class="button" value="Refresh" onclick="location.reload()"/>
-				<input type="text" id="searchfield" value="Search"/>
-			</div>
-			<div id="emailPanel">
-				<?php if(isset($feedback)) echo $feedback;?>
-			</div>
-			<div id="footer">
-			 <p>
-    			<a href="http://validator.w3.org/check?uri=referer"><img
-      			src="http://www.w3.org/Icons/valid-xhtml10" alt="Valid XHTML 1.0 Strict" height="31" width="88" /></a>
-      			<a href="http://jigsaw.w3.org/css-validator/check/referer"><img src="http://jigsaw.w3.org/css-validator/images/vcss-blue" alt="Valid CSS!" /></a>
-			</p>
-			</div>
-		</div>
-		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-		<script type="text/javascript" src="js/Tools.js"></script>
-		<script type="text/javascript" src="js/Inbox.js"></script>
-		<script type='text/javascript' src='js/Search.js'></script>
-	</body>
-</html>
