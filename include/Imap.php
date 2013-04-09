@@ -292,7 +292,7 @@ class Imap{
 		switch ($response['code']) 
 		{
 			case self::OK:
-				return $response['response'];
+				return $this->process_message($response['response']);
 
 			case self::NO:
 				$this->error = array('error'=>'This folder does not exist.');
@@ -581,6 +581,27 @@ class Imap{
 		}
 	}
 
+	private function process_message($message)
+	{
+		$processed_message  = '';
+		//get plain text part;
+		$start = strpos($message, "Content-Type: text/plain");
+		$end = strpos($message, "Content-Type: text/html");
+		$message = substr($message, $start,$end);
+
+		$lines = explode('<br/>', $message);
+		foreach ($lines as $line){
+			if(strpos($line, "Content-Type") !== false
+				|| strpos($line, "Content-Transfer-Encoding") !== false)
+				continue;
+			$processed_message .= $line.'<br/>';
+		}
+
+		$from = array('=3D','=OD');
+		$to = array('=','<br/>');
+		return str_replace($from, $to, $processed_message);
+	}
+
 
 	/**
 	*decodes html tags (I tried using html_entity_decode but that didnt work for some reason)
@@ -598,5 +619,4 @@ class Imap{
 
 
 }
-
 ?>
