@@ -587,9 +587,12 @@ class Imap{
 		//get plain text part;
 		$start = strpos($message, "Content-Type: text/plain");
 		$end = strpos($message, "Content-Type: text/html");
-		$message = substr($message, $start,$end);
+		$msg = substr($message, $start,$end);
 
-		$lines = explode('<br/>', $message);
+		if($msg == "")
+			$msg = $message;
+
+		$lines = explode('<br/>', $msg);
 		foreach ($lines as $line){
 			if(strpos($line, "Content-Type") !== false
 				|| strpos($line, "Content-Transfer-Encoding") !== false)
