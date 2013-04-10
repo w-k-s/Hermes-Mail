@@ -38,4 +38,8 @@ $(document).ready(function () {
 
     	post("delete.php",deleteList);
     });
+
+    $('#notification_panel').click(function(){
+        $(this).hide();
+    });
 });

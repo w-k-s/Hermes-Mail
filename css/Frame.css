@@ -77,6 +77,18 @@ body{
 	padding:0.5em 2em;
 }
 
+#notification_panel{
+	background: #FFEC8B;
+	height: 3%;
+	width: 100%;
+	text-align: left;
+	padding: 0.25%;
+	font-family: "Trebuchet MS","tahoma";
+	text-align: center;
+	font-size: 1.25em;
+}
+
+
 #footer{
 	background: white;
 	width:auto;

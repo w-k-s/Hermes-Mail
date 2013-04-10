@@ -9,6 +9,9 @@
 	overflow:scroll;
 	overflow-x: hidden;
 }
+
+
+
 #table_inbox{
 	width: 100%;
 }
@@ -29,6 +32,8 @@
 #table_inbox tr:nth-child(even) {
 	background-color: #F0F8FF;
 }
+
+
 
 tr .td_subject{
 	width:50%;

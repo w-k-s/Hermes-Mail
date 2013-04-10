@@ -5,12 +5,23 @@
 
 #infoPanel{
 	background:#F7F7F7;/*#F0F8FF;*/
-	height:13%;
+	height:10%;
 	width:auto;
 	border-bottom:1px solid #E0E0E0;
 	line-height: 2em;
 	padding:0.5em 2em;
 	overflow: auto;
+}
+
+#notification_panel{
+	background: #FFEC8B;
+	height: 3%;
+	width: 100%;
+	text-align: left;
+	padding: 0.25%;
+	font-family: "Trebuchet MS","tahoma";
+	text-align: center;
+	font-size: 1.25em;
 }
 
 #emailPanel{

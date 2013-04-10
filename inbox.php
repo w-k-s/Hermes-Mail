@@ -10,7 +10,8 @@ $inbox_template_uri = 'html/inbox.html';
 //-----------TEMPLATE VARIABLES-------//
 $username = 'null';
 $feedback = 'Inbox could not be loaded';
-$dialog = '';
+$notification = 'Messages could not be deleted.';
+$display_notification_panel = 'none';
 
 //-----------REDIRECTS---------------//
 $login_uri = 'index.php';
@@ -115,14 +116,12 @@ if(isset($_SESSION['username'])
 		$delete_status = $_GET['d'];
 		switch ($delete_status) {
 			case '0':
-				$dialog = 'alert("Messages could not be deleted.");';
+				$notification = 'Message could not be deleted.';
+				$display_notification_panel = 'block';
 				break;
 			
 			case '1':
 				//dont show a dialog. That'd be annoying.
-				break;
-			default:
-				# code...
 				break;
 		}
 	}
@@ -133,8 +132,8 @@ else
 
 //load inbox template
 $inbox_template = file_get_contents($inbox_template_uri);
-$from = array('{{@username}}','{{@inbox}}','{{@dialog}}');
-$to = array($username,$feedback,$dialog);
+$from = array('{{@username}}','{{@inbox}}','{{@notification}}','{{@display_notification_panel}}');
+$to = array($username,$feedback,$notification,$display_notification_panel);
 
 //insert template variables into template and return.
 echo str_replace($from, $to, $inbox_template);

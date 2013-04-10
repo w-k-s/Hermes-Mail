@@ -11,7 +11,8 @@ $username = '';
 $to = '';
 $subject = '';
 $body = '';
-$dialog = '';
+$notification = 'Message could not be delivered.';
+$display_notification_panel = 'none';
 
 //-----------REDIRECTS-----------//
 $login_uri = 'index.php';
@@ -43,7 +44,8 @@ if(isset($_POST['to'])
 		$smtp = new Smtp("ssl://smtp.gmail.com","465");
 		if(!$smtp->Login($username,$password))
 		{
-			$status = 'Message could not be sent because you are not signed-in';
+			$error = $smtp->Error();
+			$notification = $error['Error'];
 		}
 		
 		//send mail
@@ -51,15 +53,14 @@ if(isset($_POST['to'])
 		{
 			$error = $smtp->Error();
 			$status = $error['Error'];
-			die();
+			$notification = $error['Error'];
 		}else
-			$status = 'Message sent!';
+			$notification = 'Message delivered!';
 
 	}catch(Exception $e){
-		$status = $e->getMessage();
+		$notification = $e->getMessage();
 	}
-
-	$dialog = 'alert("'.$status.'");';
+$display_notification_panel = 'block';
 }
 
 //if mail is being replied to, 
@@ -75,8 +76,8 @@ if(isset($_POST['reply_to'])
 
 //load template
 $compose_template = file_get_contents($compose_template_uri);
-$from = array('{{@username}}','{{@to}}','{{@subject}}','{{@body}}','{{@dialog}}');
-$to = array($username,$to,$subject,$body,$dialog);
+$from = array('{{@username}}','{{@to}}','{{@subject}}','{{@body}}','{{@notification}}','{{@display_notification_panel}}');
+$to = array($username,$to,$subject,$body,$notification,$display_notification_panel);
 
 //insert template variables into template and return.
 echo str_replace($from, $to, $compose_template);

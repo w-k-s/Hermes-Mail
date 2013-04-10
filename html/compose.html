@@ -52,6 +52,9 @@
 					</tr>
 				</table>
 			</div>
+			<div id='notification_panel' style='display: {{@display_notification_panel}}'>
+				{{@notification}} (Click to dismiss)
+			</div>
 			<div id="emailPanel">
 				<div id="holder">
 					<textarea id="txt_message" cols="10" rows="10">{{@body}}</textarea>
@@ -65,11 +68,9 @@
 				</p>
 			</div>
 		</div>
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 		<script type="text/javascript" src="js/Tools.js"></script>
 		<script type="text/javascript" src="js/Validate.js"></script>
 		<script type="text/javascript" src="js/Compose.js"></script>
-		<script type='text/javascript'>
-		{{@dialog}}
-		</script>
 	</body>
 </html>

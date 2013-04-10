@@ -78,3 +78,9 @@ function doCancel()
 	if(confirm("Are you sure you want to cancel writing this message?"))
 		location.href='inbox.php';
 }
+
+$(document).ready(function(){
+	$('#notification_panel').click(function(){
+        $(this).hide();
+    });
+});

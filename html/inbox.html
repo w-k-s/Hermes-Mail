@@ -37,6 +37,9 @@
 				<input type="button" class="button" value="Refresh" onclick="location.reload()"/>
 				<input type="text" id="searchfield" value="Search"/>
 			</div>
+			<div id='notification_panel' style='display:{{@display_notification_panel}}'>
+				{{@notification}} (Click to dismiss)
+			</div>
 			<div id="emailPanel">
 				{{@inbox}}
 			</div>
@@ -52,8 +55,5 @@
 		<script type="text/javascript" src="js/Tools.js"></script>
 		<script type="text/javascript" src="js/Inbox.js"></script>
 		<script type='text/javascript' src='js/Search.js'></script>
-		<script type='text/javascript'>
-			{{@dialog}}
-		</script>
 	</body>
 </html>
