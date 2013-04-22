@@ -47,7 +47,7 @@ body{
 }
 
 #navigation{
-	background: #fcfcfc;
+	background: #ededed;//#fcfcfc;
 	width:11%;
 	height:95%;
 	float:left;
@@ -118,6 +118,13 @@ li a:hover,li a:active{
 	padding: 0.5em;
 	font-size: 12px;
 	box-shadow: inset 0px 0px 6px #808080;
+	width: 120px;
+	-webkit-transition: width 0.5s;
+}
+
+#searchfield:focus{
+	width: 250px;
+	-webkit-transition: width 0.5s;
 }
 
 
