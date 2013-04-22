@@ -117,7 +117,7 @@ class Imap{
 				
 				case self::NO:
 					$this->_authenticated = false;
-					$this->error = array('error'=>'Invalid username or password.');
+					$this->error = array('error'=>'Authentication Failed.');
 					break;
 
 				case self::BAD:
@@ -174,7 +174,7 @@ class Imap{
 					self::FIELD_DATE=>$date[1]);
 
 			case self::NO:
-				$this->error = array('error'=>'This folder does not exist.');
+				$this->error = array('error'=>'Header could not be retrieved');
 				return false;
 
 			case self::BAD:
@@ -295,7 +295,7 @@ class Imap{
 				return $this->process_message($response['response']);
 
 			case self::NO:
-				$this->error = array('error'=>'This folder does not exist.');
+				$this->error = array('error'=>'Message could not be retrieved');
 				return false;
 
 			case self::BAD:

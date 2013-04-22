@@ -128,7 +128,7 @@ if(isset($_SESSION['username'])
 }
 else
 	//avoid circular loop by asking the user to log out.
-	die('You could not be signed in. Please <a href="logout.php">Log-out</a> and try again. Sorry :( ');
+	die('Session timed out. Please <a href="logout.php">Log-out</a> and sign-in again. Sorry :(<br/>');
 
 //load inbox template
 $inbox_template = file_get_contents($inbox_template_uri);

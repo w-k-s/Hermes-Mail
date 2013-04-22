@@ -43,24 +43,19 @@ if(isset($_POST['to'])
 	try{
 		$smtp = new Smtp("ssl://smtp.gmail.com","465");
 		if(!$smtp->Login($username,$password))
-		{
-			$error = $smtp->Error();
-			$notification = $error['Error'];
-		}
+			$notification = $smtp->Error();
 		
 		//send mail
 		if(!$smtp->SendMail($username,$to,$subject,$body))
-		{
-			$error = $smtp->Error();
-			$status = $error['Error'];
-			$notification = $error['Error'];
-		}else
+			$notification = $smtp->Error();
+		else
 			$notification = 'Message delivered!';
 
 	}catch(Exception $e){
 		$notification = $e->getMessage();
 	}
-$display_notification_panel = 'block';
+
+	$display_notification_panel = 'block';
 }
 
 //if mail is being replied to, 
@@ -75,9 +70,9 @@ if(isset($_POST['reply_to'])
 }
 
 //load template
-$compose_template = file_get_contents($compose_template_uri);
-$from = array('{{@username}}','{{@to}}','{{@subject}}','{{@body}}','{{@notification}}','{{@display_notification_panel}}');
-$to = array($username,$to,$subject,$body,$notification,$display_notification_panel);
+$compose_template 	= file_get_contents($compose_template_uri);
+$from 				= array('{{@username}}','{{@to}}','{{@subject}}','{{@body}}','{{@notification}}','{{@display_notification_panel}}');
+$to 				= array($username,$to,$subject,$body,$notification,$display_notification_panel);
 
 //insert template variables into template and return.
 echo str_replace($from, $to, $compose_template);

@@ -41,5 +41,6 @@ if(isset($_SESSION['username']) && isset($_SESSION['password']) && isset($_POST[
 	}
 
 }else
-	header('Location: '.$_inbox_uri);
+	die('Session timed out. Please <a href="logout.php">Log-out</a> and sign-in again. Sorry :(<br/>');
+
 ?>

@@ -81,7 +81,7 @@ class Smtp{
 		if(!$this->Connected)
 		{
 			$this->Error = 
-			array('Error' => 'Connection to server could not be established.',
+			array('Error' => 'A Connection to server could not be established.',
 				  'Code' => $this->ResponseCode($SmtpResponse),
 				  'Messafe' => $this->ResponseMessage($SmtpResponse));
 		}
@@ -241,7 +241,11 @@ class Smtp{
 
 		//if not ok, return false
 		if($this->ResponseCode($SmtpResponse)!="250")
+		{
+			$this->Error = 
+				array('Error'=>'Receipant address was not accepted.');
 			return false;
+		}
 
 		//issue receipant smtp command
 		@fputs($this->SmtpConnection,"RCPT TO:<$to>\r\n");
@@ -250,7 +254,11 @@ class Smtp{
 
 		//if not ok, return false
 		if($this->ResponseCode($SmtpResponse) != "250")
+		{
+			$this->Error = 
+				array('Error'=>'Sender address was not accepted.');
 			return false;
+		}
 
 		//write message
 		@fputs($this->SmtpConnection,"DATA\r\n");
@@ -259,7 +267,11 @@ class Smtp{
 
 		//if not ok, return false
 		if($this->ResponseCode($SmtpResponse) != "354")
+		{
+			$this->Error = 
+				array('Error'=>'Message contents were not accepted.');
 			return false;
+		}
 
 		//create header for mail
 		$header = $this->CreateHeader($from,$to,$subject);
@@ -327,9 +339,8 @@ class Smtp{
 	*/
 	public function Error()
 	{
-		return $this->Error;
+		return $this->Error('Error');
 	}
-
 }
 
 ?>
