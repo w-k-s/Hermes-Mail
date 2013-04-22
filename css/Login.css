@@ -74,10 +74,11 @@ body{
 
 .field{
 	width: 96%;
-	padding: 0.3em;
-	font-size: 16px;
+	padding: 0.4em;
+	font-size: 13px;
 	border: 2px solid #b0b0b0;
 	border-radius:2px;
+	font-weight: normal;
 }
 
 .button{
