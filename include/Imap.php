@@ -594,14 +594,18 @@ class Imap{
 
 		$lines = explode('<br/>', $msg);
 		foreach ($lines as $line){
-			if(strpos($line, "Content-Type") !== false
-				|| strpos($line, "Content-Transfer-Encoding") !== false)
+			if($line === ""
+				|| strpos($line, "Content-Type") !== false
+				|| strpos($line, "Content-Transfer-Encoding") !== false
+				|| strpos($line, "FETCH") !== false
+				|| strpos($line, "OK Success" )!== false)
 				continue;
+
 			$processed_message .= $line.'<br/>';
 		}
 
-		$from = array('=3D','=OD');
-		$to = array('=','<br/>');
+		$from = array('=0D','=1D','=2D','=3D','=4D','=5D','=6D','==');
+		$to = array('',' ','  ','   ','    ','     ','      ','-');
 		return str_replace($from, $to, $processed_message);
 	}
 
